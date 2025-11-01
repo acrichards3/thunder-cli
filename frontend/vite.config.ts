@@ -9,7 +9,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Load .env file from frontend directory
 config({ path: path.resolve(__dirname, ".env") });
 
-import { env } from "./src/env/env";
+// Read envs directly at config time (dotenv loaded above)
+const vitePort = Number(process.env.VITE_PORT) || 5173;
 
 export default defineConfig({
   plugins: [react()],
@@ -20,6 +21,6 @@ export default defineConfig({
     },
   },
   server: {
-    port: env.VITE_PORT,
+    port: vitePort,
   },
 });

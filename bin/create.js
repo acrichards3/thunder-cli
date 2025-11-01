@@ -1,133 +1,226 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { resolve, dirname } from "path";
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  copyFileSync,
+  mkdirSync,
+  readdirSync,
+} from "fs";
+import { resolve, dirname, join, basename } from "path";
 import { fileURLToPath } from "url";
+import { spawnSync } from "child_process";
+import readline from "readline";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Find the package root directory (where package.json should be)
-// The bin script is in <package-root>/bin/create.js, so package.json is one level up
-let packageRoot = dirname(__dirname);
+// Template source is the package root (parent of bin/)
+const templateRoot = resolve(__dirname, "..");
 
-// Check if this is a new project or already initialized
-let packageJsonPath = resolve(packageRoot, "package.json");
-if (!existsSync(packageJsonPath)) {
-  // If not found relative to script, try cwd as fallback
-  const cwdPackageJson = resolve(process.cwd(), "package.json");
-  if (existsSync(cwdPackageJson)) {
-    packageRoot = process.cwd();
-    packageJsonPath = cwdPackageJson;
-  } else {
-    console.error(
-      "Error: package.json not found. Please run this from the project root."
-    );
-    process.exit(1);
-  }
+// Determine project name: argv[2] or prompt
+const argName = (process.argv[2] || "").trim();
+
+async function promptName(defaultName) {
+  return await new Promise((resolveName) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    rl.question(`Project name (${defaultName}): `, (answer) => {
+      rl.close();
+      const n = (answer || defaultName)
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, "-");
+      resolveName(n || defaultName);
+    });
+  });
 }
 
-const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+async function main() {
+  const cwd = process.cwd();
+  const defaultName = "thunder-app";
+  let projectName = argName;
+  if (!projectName) {
+    projectName = await promptName(defaultName);
+  }
+  projectName =
+    projectName.toLowerCase().replace(/[^a-z0-9-]/g, "-") || defaultName;
 
-// Only run if this is still the template package
-if (
-  packageJson.name === "create-thunder-app" ||
-  packageJson.name === "ak-wedding"
-) {
-  // Get project name from directory name or command line argument
-  const projectNameArg = process.argv[2];
-  const targetDir = packageRoot; // Use package root as target
-  const projectName =
-    projectNameArg ||
-    targetDir
-      .split("/")
-      .pop()
-      ?.toLowerCase()
-      .replace(/[^a-z0-9-]/g, "-") ||
-    "thunder-app";
+  const targetDir = resolve(cwd, projectName);
+  if (existsSync(targetDir)) {
+    const contents = readdirSync(targetDir);
+    if (contents.length > 0) {
+      console.error(
+        `Error: directory "${projectName}" already exists and is not empty.`
+      );
+      process.exit(1);
+    }
+  } else {
+    mkdirSync(targetDir, { recursive: true });
+  }
 
-  // Update root package.json
-  packageJson.name = projectName;
-  packageJson.private = true;
-  delete packageJson.postinstall;
-  delete packageJson.bin;
-  writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\n");
+  // Copy files from templateRoot to targetDir, excluding unwanted dirs/files
+  const ignore = new Set(["node_modules", ".git", ".DS_Store", "bin"]);
+  const shouldIgnore = (name) => ignore.has(name);
 
-  // Update workspace package names
-  const updateWorkspacePackage = (workspacePath, oldPrefixes, newPrefix) => {
-    const pkgPath = resolve(targetDir, workspacePath, "package.json");
-    if (existsSync(pkgPath)) {
-      const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
-      for (const oldPrefix of oldPrefixes) {
-        if (pkg.name?.startsWith(oldPrefix)) {
-          pkg.name = pkg.name.replace(oldPrefix, newPrefix);
-          writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
-          break;
+  const copyRecursive = (src, dest) => {
+    const entries = readdirSync(src, { withFileTypes: true });
+    for (const entry of entries) {
+      if (shouldIgnore(entry.name)) continue;
+      const srcPath = join(src, entry.name);
+      const destPath = join(dest, entry.name);
+      if (entry.isDirectory()) {
+        if (!existsSync(destPath)) mkdirSync(destPath, { recursive: true });
+        copyRecursive(srcPath, destPath);
+      } else {
+        copyFileSync(srcPath, destPath);
+      }
+    }
+  };
+
+  copyRecursive(templateRoot, targetDir);
+
+  // Update package names and scripts in the copied project
+  const pkgPath = resolve(targetDir, "package.json");
+  if (!existsSync(pkgPath)) {
+    console.error("Error: package.json not found in target directory");
+    process.exit(1);
+  }
+
+  const rootPkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+  rootPkg.name = projectName;
+  rootPkg.private = true;
+  delete rootPkg.postinstall;
+  delete rootPkg.bin;
+
+  const newPrefix = `@${projectName}/`;
+  const replacePrefixes = (s) =>
+    typeof s === "string"
+      ? s.replace(/@ak-wedding\/|@thunder-app\//g, newPrefix)
+      : s;
+  if (rootPkg.scripts) {
+    for (const k of Object.keys(rootPkg.scripts)) {
+      rootPkg.scripts[k] = replacePrefixes(rootPkg.scripts[k]);
+    }
+  }
+  writeFileSync(pkgPath, JSON.stringify(rootPkg, null, 2) + "\n");
+
+  const updateWorkspace = (wsName) => {
+    const wsPkgPath = resolve(targetDir, wsName, "package.json");
+    if (!existsSync(wsPkgPath)) return;
+    const wsPkg = JSON.parse(readFileSync(wsPkgPath, "utf-8"));
+    if (
+      wsPkg.name?.startsWith("@ak-wedding/") ||
+      wsPkg.name?.startsWith("@thunder-app/")
+    ) {
+      wsPkg.name = wsPkg.name.replace(
+        /@ak-wedding\/|@thunder-app\//,
+        newPrefix
+      );
+    }
+    if (wsPkg.dependencies) {
+      for (const dep of Object.keys(wsPkg.dependencies)) {
+        if (dep.startsWith("@ak-wedding/") || dep.startsWith("@thunder-app/")) {
+          const newDep = dep.replace(/@ak-wedding\/|@thunder-app\//, newPrefix);
+          wsPkg.dependencies[newDep] = wsPkg.dependencies[dep];
+          delete wsPkg.dependencies[dep];
+        }
+      }
+    }
+    writeFileSync(wsPkgPath, JSON.stringify(wsPkg, null, 2) + "\n");
+  };
+
+  updateWorkspace("frontend");
+  updateWorkspace("backend");
+  updateWorkspace("lib");
+
+  // Replace import specifiers inside source files to use the new scope
+  const replaceInSource = (dir) => {
+    const entries = readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        // skip node_modules and dist
+        if (entry.name === "node_modules" || entry.name === "dist") continue;
+        replaceInSource(fullPath);
+      } else {
+        if (!/(\.ts|\.tsx|\.js|\.mjs|\.cjs)$/.test(entry.name)) continue;
+        const content = readFileSync(fullPath, "utf-8");
+        const replaced = content
+          // preserve the original quote (single or double)
+          .replace(/(["'])@ak-wedding\//g, `$1${newPrefix}`)
+          .replace(/(["'])@thunder-app\//g, `$1${newPrefix}`);
+        if (replaced !== content) {
+          writeFileSync(fullPath, replaced);
         }
       }
     }
   };
 
-  // Update all workspace packages (check both old and new prefixes for backward compatibility)
-  const oldPrefixes = ["@ak-wedding/", "@thunder-app/"];
-  const newPrefix = `@${projectName}/`;
-  updateWorkspacePackage("frontend", oldPrefixes, newPrefix);
-  updateWorkspacePackage("backend", oldPrefixes, newPrefix);
-  updateWorkspacePackage("lib", oldPrefixes, newPrefix);
+  replaceInSource(resolve(targetDir, "backend"));
+  replaceInSource(resolve(targetDir, "frontend"));
 
-  // Update workspace dependencies in frontend and backend
-  const updateDependencies = (workspacePath) => {
-    const pkgPath = resolve(targetDir, workspacePath, "package.json");
-    if (existsSync(pkgPath)) {
-      const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
-      let updated = false;
+  // Optional installs
+  const askYesNo = async (question, defaultYes = true) => {
+    return await new Promise((resolveAns) => {
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+      const suffix = defaultYes ? "(Y/n)" : "(y/N)";
+      rl.question(`${question} ${suffix} `, (answer) => {
+        rl.close();
+        const a = (answer || "").trim().toLowerCase();
+        if (!a) return resolveAns(defaultYes);
+        resolveAns(a === "y" || a === "yes");
+      });
+    });
+  };
 
-      if (pkg.dependencies) {
-        Object.keys(pkg.dependencies).forEach((dep) => {
-          if (
-            dep.startsWith("@ak-wedding/") ||
-            dep.startsWith("@thunder-app/")
-          ) {
-            const newDep = dep.replace(
-              /@ak-wedding\/|@thunder-app\//,
-              newPrefix
-            );
-            pkg.dependencies[newDep] = pkg.dependencies[dep];
-            delete pkg.dependencies[dep];
-            updated = true;
-          }
+  const doInstall = await askYesNo(
+    "Run bun install for all workspaces now?",
+    true
+  );
+  if (doInstall) {
+    console.log("\n› Installing dependencies (root workspace)...\n");
+    const res = spawnSync("bun", ["install"], {
+      cwd: targetDir,
+      stdio: "inherit",
+    });
+    if (res.status !== 0) {
+      console.error("bun install failed. You can run it manually later.");
+    } else {
+      const doBuildLib = await askYesNo("Build shared lib package now?", true);
+      if (doBuildLib) {
+        console.log("\n› Building lib...\n");
+        const buildRes = spawnSync("bun", ["run", "build:lib"], {
+          cwd: targetDir,
+          stdio: "inherit",
         });
-      }
-
-      if (updated) {
-        writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
+        if (buildRes.status !== 0) {
+          console.error(
+            "lib build failed. You can run 'bun run build:lib' later."
+          );
+        }
       }
     }
-  };
-
-  updateDependencies("frontend");
-  updateDependencies("backend");
-
-  // Update build scripts that reference old package names
-  const updateScripts = () => {
-    const scripts = packageJson.scripts || {};
-    Object.keys(scripts).forEach((key) => {
-      if (scripts[key] && typeof scripts[key] === "string") {
-        scripts[key] = scripts[key].replace(
-          /@ak-wedding\/|@thunder-app\//g,
-          newPrefix
-        );
-      }
-    });
-    writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\n");
-  };
-
-  updateScripts();
+  }
 
   console.log(`\n✓ Project initialized as "${projectName}"\n`);
   console.log("🚀 Thunder App template initialized!\n");
+  console.log(`📍 Project location: ${targetDir}\n`);
   console.log("Next steps:");
-  console.log("  1. bun install");
-  console.log("  2. bun run build:lib");
-  console.log("  3. bun run dev\n");
+  console.log(`  1. cd ${projectName}`);
+  console.log(
+    "  2. bun install    # installs all workspaces (frontend, lib, backend)"
+  );
+  console.log("  3. bun run build:lib");
+  console.log("  4. bun run dev\n");
 }
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

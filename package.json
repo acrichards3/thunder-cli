@@ -1,6 +1,6 @@
 {
   "name": "create-thunder-app",
-  "version": "1.0.2",
+  "version": "1.0.13",
   "private": false,
   "type": "module",
   "description": "A monorepo template with Vite React frontend, HonoJS backend, and shared lib package",
@@ -14,13 +14,14 @@
     "typescript"
   ],
   "bin": {
-    "create-thunder-app": "./bin/create.js"
+    "create-thunder-app": "bin/create.js"
   },
   "files": [
+    "package.json",
+    "bin",
     "frontend",
     "backend",
     "lib",
-    "bin",
     "*.json",
     "*.ts",
     "*.config.*",

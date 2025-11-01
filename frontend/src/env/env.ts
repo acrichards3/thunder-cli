@@ -10,7 +10,11 @@ export function validatedEnv() {
   // At runtime (browser), use import.meta.env
   const nodeEnv =
     typeof window === "undefined"
-      ? (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+      ? (
+          globalThis as {
+            process?: { env?: Record<string, string | undefined> };
+          }
+        ).process?.env
       : undefined;
   const envSource = nodeEnv ?? import.meta.env;
 
