@@ -1,23 +1,27 @@
 # Thunder App Template
 
-A monorepo template with Vite React frontend, HonoJS backend, and shared lib package.
+Monorepo template: Vite + React frontend, Hono backend, and a shared TypeScript `lib`.
 
-## 🚀 Using This Template
+## 🚀 Quickstart
 
-Create a new project using this template:
+Create a new app in the current directory (you'll be prompted for a name):
 
 ```bash
 bun create thunder-app@latest
 ```
 
-This will create a new directory and clone the template. After that:
+Or specify the name directly:
 
 ```bash
-cd <your-project-name>
-bun install
-bun run build:lib
-bun run dev
+bun create thunder-app@latest my-app
 ```
+
+The generator will:
+
+- Copy the template into `./my-app` (or the name you provide)
+- Rename all package scopes to `@<your-app>/...`
+- Seed env files with sensible defaults
+- Ask to run `bun install` (workspaces) and optionally build `lib`
 
 ## 📁 Project Structure
 
@@ -25,15 +29,13 @@ bun run dev
 - `backend/` - HonoJS API server
 - `lib/` - Shared TypeScript package used by both frontend and backend
 
-## 💻 Development Commands
-
-All commands can be run from the root directory:
+## 💻 Development Commands (run from repo root)
 
 | Command                | Description                                      |
 | ---------------------- | ------------------------------------------------ |
 | `bun run dev`          | Start both frontend and backend                  |
-| `bun run dev:frontend` | Start only the frontend (port 3000)              |
-| `bun run dev:backend`  | Start only the backend (port 3001)               |
+| `bun run dev:frontend` | Start only the frontend (Vite, port 5173)        |
+| `bun run dev:backend`  | Start only the backend (Hono, port 3000)         |
 | `bun run dev:lib`      | Watch mode for lib package (rebuilds on changes) |
 | `bun run build`        | Build all packages                               |
 | `bun run build:lib`    | Build only the lib package                       |
@@ -69,12 +71,27 @@ bun run dev:lib
 - **Language:** TypeScript 5.9
 - **Code Quality:** ESLint + Prettier
 
-## 📝 Additional Notes
+## 🔧 Defaults & Env
 
-- The frontend runs on port **3000**
-- The backend runs on port **3001**
-- All packages use TypeScript with strict mode enabled
-- ESLint and Prettier are configured for code consistency
+- Backend port: `3000`
+- Frontend port: `5173`
+- Frontend `VITE_BACKEND_URL`: `http://localhost:3000`
+
+Generated env files:
+
+```bash
+# backend/.env
+PORT=3000
+
+# frontend/.env
+VITE_BACKEND_URL=http://localhost:3000
+VITE_PORT=5173
+```
+
+Notes:
+
+- Vite reads `frontend/.env` at config time; restart dev server after changes
+- All packages use TypeScript (strict); ESLint + Prettier configured
 
 ---
 
@@ -101,4 +118,4 @@ To publish this template to npm so others can use it:
    bun create thunder-app@latest
    ```
 
-Note: The package name is `create-thunder-app`, but users call it with `bun create thunder-app` (Bun automatically prepends `create-` when looking for the package).
+Note: The package name is `create-thunder-app`, but users call it with `bun create thunder-app` (Bun automatically prepends `create-`).
