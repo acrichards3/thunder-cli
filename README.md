@@ -65,7 +65,7 @@ bun run dev:lib
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React 18 + Vite + TypeScript
+- **Frontend:** React 19 + Vite + TypeScript
 - **Backend:** HonoJS + TypeScript
 - **Package Manager:** Bun
 - **Language:** TypeScript 5.9
