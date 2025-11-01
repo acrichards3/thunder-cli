@@ -1,0 +1,35 @@
+{
+  "name": "@ak-wedding/backend",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "tsc",
+    "start": "bun run dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@ak-wedding/lib": "workspace:*",
+    "drizzle-orm": "^0.44.7",
+    "hono": "^4.0.0",
+    "postgres": "^3.4.7",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@hono/node-server": "^1.11.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "bun-types": "latest",
+    "drizzle-kit": "^0.31.6",
+    "eslint": "^8.57.0",
+    "eslint-plugin-sort-keys": "^2.3.5",
+    "eslint-plugin-typescript-sort-keys": "^3.3.0",
+    "typescript": "^5.9.0"
+  }
+}

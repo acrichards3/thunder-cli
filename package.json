@@ -1,0 +1,55 @@
+{
+  "name": "create-thunder-app",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "description": "A monorepo template with Vite React frontend, HonoJS backend, and shared lib package",
+  "keywords": [
+    "template",
+    "monorepo",
+    "react",
+    "vite",
+    "hono",
+    "bun",
+    "typescript"
+  ],
+  "files": [
+    "frontend",
+    "backend",
+    "lib",
+    "bin",
+    "*.json",
+    "*.ts",
+    "*.config.*",
+    "README.md"
+  ],
+  "workspaces": [
+    "frontend",
+    "lib",
+    "backend"
+  ],
+  "scripts": {
+    "build": "bun run build:lib && bun run typecheck && bun run lint && bun run build:frontend && bun run build:backend",
+    "build:all": "bun run build:lib && bun run build:frontend && bun run build:backend",
+    "build:backend": "bun run --filter @ak-wedding/backend build",
+    "build:frontend": "bun run --filter @ak-wedding/frontend build",
+    "build:lib": "bun run --filter @ak-wedding/lib build",
+    "dev": "bun run --filter '*' dev",
+    "dev:backend": "bun run --filter @ak-wedding/backend dev",
+    "dev:frontend": "bun run --filter @ak-wedding/frontend dev",
+    "dev:lib": "bun run --filter @ak-wedding/lib dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "bun run format:check && bun run lint:eslint",
+    "lint:eslint": "bun run --filter '*' lint",
+    "lint:fix": "bun run format && bun run --filter '*' lint --fix",
+    "typecheck": "bun tsc -b --clean && bun tsc -b",
+    "postinstall": "node bin/create.js"
+  },
+  "devDependencies": {
+    "eslint-plugin-sort-keys": "^2.3.5",
+    "eslint-plugin-typescript-sort-keys": "^3.3.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.9.0"
+  }
+}
