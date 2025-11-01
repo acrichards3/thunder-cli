@@ -1,5 +1,5 @@
 import { defineConfig } from "drizzle-kit";
-import { raise } from "@ak-wedding/lib";
+import { raise } from "@thunder-app/lib";
 
 export default defineConfig({
   dbCredentials: {

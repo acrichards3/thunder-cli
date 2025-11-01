@@ -1,5 +1,5 @@
 {
-  "name": "@ak-wedding/lib",
+  "name": "@thunder-app/lib",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.js",

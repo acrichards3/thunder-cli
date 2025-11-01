@@ -1,16 +1,30 @@
 #!/usr/bin/env node
 
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 
-// Get the target directory (where the template was cloned)
-const targetDir = process.cwd();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Find the package root directory (where package.json should be)
+// The bin script is in <package-root>/bin/create.js, so package.json is one level up
+let packageRoot = dirname(__dirname);
 
 // Check if this is a new project or already initialized
-const packageJsonPath = resolve(targetDir, "package.json");
+let packageJsonPath = resolve(packageRoot, "package.json");
 if (!existsSync(packageJsonPath)) {
-  // Not a template installation, skip
-  process.exit(0);
+  // If not found relative to script, try cwd as fallback
+  const cwdPackageJson = resolve(process.cwd(), "package.json");
+  if (existsSync(cwdPackageJson)) {
+    packageRoot = process.cwd();
+    packageJsonPath = cwdPackageJson;
+  } else {
+    console.error(
+      "Error: package.json not found. Please run this from the project root."
+    );
+    process.exit(1);
+  }
 }
 
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
@@ -20,36 +34,46 @@ if (
   packageJson.name === "create-thunder-app" ||
   packageJson.name === "ak-wedding"
 ) {
-  // Get project name from directory name
+  // Get project name from directory name or command line argument
+  const projectNameArg = process.argv[2];
+  const targetDir = packageRoot; // Use package root as target
   const projectName =
+    projectNameArg ||
     targetDir
       .split("/")
       .pop()
       ?.toLowerCase()
-      .replace(/[^a-z0-9-]/g, "-") || "thunder-app";
+      .replace(/[^a-z0-9-]/g, "-") ||
+    "thunder-app";
 
   // Update root package.json
   packageJson.name = projectName;
   packageJson.private = true;
   delete packageJson.postinstall;
+  delete packageJson.bin;
   writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\n");
 
   // Update workspace package names
-  const updateWorkspacePackage = (workspacePath, oldPrefix, newPrefix) => {
+  const updateWorkspacePackage = (workspacePath, oldPrefixes, newPrefix) => {
     const pkgPath = resolve(targetDir, workspacePath, "package.json");
     if (existsSync(pkgPath)) {
       const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
-      if (pkg.name?.startsWith(oldPrefix)) {
-        pkg.name = pkg.name.replace(oldPrefix, newPrefix);
-        writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
+      for (const oldPrefix of oldPrefixes) {
+        if (pkg.name?.startsWith(oldPrefix)) {
+          pkg.name = pkg.name.replace(oldPrefix, newPrefix);
+          writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
+          break;
+        }
       }
     }
   };
 
-  // Update all workspace packages
-  updateWorkspacePackage("frontend", "@ak-wedding/", `@${projectName}/`);
-  updateWorkspacePackage("backend", "@ak-wedding/", `@${projectName}/`);
-  updateWorkspacePackage("lib", "@ak-wedding/", `@${projectName}/`);
+  // Update all workspace packages (check both old and new prefixes for backward compatibility)
+  const oldPrefixes = ["@ak-wedding/", "@thunder-app/"];
+  const newPrefix = `@${projectName}/`;
+  updateWorkspacePackage("frontend", oldPrefixes, newPrefix);
+  updateWorkspacePackage("backend", oldPrefixes, newPrefix);
+  updateWorkspacePackage("lib", oldPrefixes, newPrefix);
 
   // Update workspace dependencies in frontend and backend
   const updateDependencies = (workspacePath) => {
@@ -60,8 +84,14 @@ if (
 
       if (pkg.dependencies) {
         Object.keys(pkg.dependencies).forEach((dep) => {
-          if (dep.startsWith("@ak-wedding/")) {
-            const newDep = dep.replace("@ak-wedding/", `@${projectName}/`);
+          if (
+            dep.startsWith("@ak-wedding/") ||
+            dep.startsWith("@thunder-app/")
+          ) {
+            const newDep = dep.replace(
+              /@ak-wedding\/|@thunder-app\//,
+              newPrefix
+            );
             pkg.dependencies[newDep] = pkg.dependencies[dep];
             delete pkg.dependencies[dep];
             updated = true;
@@ -84,8 +114,8 @@ if (
     Object.keys(scripts).forEach((key) => {
       if (scripts[key] && typeof scripts[key] === "string") {
         scripts[key] = scripts[key].replace(
-          /@ak-wedding\//g,
-          `@${projectName}/`
+          /@ak-wedding\/|@thunder-app\//g,
+          newPrefix
         );
       }
     });

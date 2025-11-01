@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { apiFetch } from "./client.util";
-import type { User } from "@ak-wedding/lib";
+import type { User } from "@thunder-app/lib";
 
 const usersSchema = z.array(
   z.object({

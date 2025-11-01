@@ -1,11 +1,13 @@
 # Dependencies
 node_modules/
 **/node_modules/
+**/node_modules/**
 bun.lock
 
 # Build outputs
 dist/
 **/dist/
+**/dist/**
 *.tsbuildinfo
 **/*.tsbuildinfo
 
