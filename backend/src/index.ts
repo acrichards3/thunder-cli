@@ -5,9 +5,13 @@ import type { User } from "@thunder-app/lib";
 
 const app = new Hono();
 
+// ! Update CORS settings as needed
 app.use(
   "*",
   cors({
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: false,
     origin: "*",
   }),
 );

@@ -1,6 +1,10 @@
+<div align="center">
+  <img src="frontend/public/thunder-app-logo.png" alt="Thunder App Logo" width="200" />
+</div>
+
 # Thunder App Template
 
-Monorepo template: Vite + React frontend, Hono backend, and a shared TypeScript `lib`.
+A modern full-stack monorepo template with Vite + React frontend, Hono backend, and a shared TypeScript `lib` package.
 
 ## 🚀 Quickstart
 
@@ -26,22 +30,36 @@ The generator will:
 ## 📁 Project Structure
 
 - `frontend/` - Vite React application
-- `backend/` - HonoJS API server
+- `backend/` - HonoJS API server with Drizzle ORM
 - `lib/` - Shared TypeScript package used by both frontend and backend
 
 ## 💻 Development Commands (run from repo root)
 
-| Command                | Description                                      |
-| ---------------------- | ------------------------------------------------ |
-| `bun run dev`          | Start both frontend and backend                  |
-| `bun run dev:frontend` | Start only the frontend (Vite, port 5173)        |
-| `bun run dev:backend`  | Start only the backend (Hono, port 3000)         |
-| `bun run dev:lib`      | Watch mode for lib package (rebuilds on changes) |
-| `bun run build`        | Build all packages                               |
-| `bun run build:lib`    | Build only the lib package                       |
-| `bun run typecheck`    | Type check all packages                          |
-| `bun run lint`         | Lint all packages                                |
-| `bun run format`       | Format all files with Prettier                   |
+| Command                  | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| `bun run dev`            | Start both frontend, lib, and backend            |
+| `bun run dev:frontend`   | Start only the frontend (Vite, port 5173)        |
+| `bun run dev:backend`    | Start only the backend (Hono, port 3000)         |
+| `bun run dev:lib`        | Watch mode for lib package (rebuilds on changes) |
+| `bun run build`          | Build all packages (includes typecheck & lint)   |
+| `bun run build:all`      | Build all packages without typecheck/lint        |
+| `bun run build:frontend` | Build only the frontend package                  |
+| `bun run build:backend`  | Build only the backend package                   |
+| `bun run build:lib`      | Build only the lib package                       |
+| `bun run typecheck`      | Type check all packages                          |
+| `bun run lint`           | Lint all packages (format check + ESLint)        |
+| `bun run lint:fix`       | Auto-fix linting issues                          |
+| `bun run format`         | Format all files with Prettier                   |
+| `bun run format:check`   | Check formatting without fixing                  |
+
+### Database Commands (run from backend directory or with filter)
+
+| Command                                             | Description                     |
+| --------------------------------------------------- | ------------------------------- |
+| `bun run --filter @thunder-app/backend db:generate` | Generate database migrations    |
+| `bun run --filter @thunder-app/backend db:migrate`  | Run database migrations         |
+| `bun run --filter @thunder-app/backend db:push`     | Push schema changes to database |
+| `bun run --filter @thunder-app/backend db:studio`   | Open Drizzle Studio             |
 
 ## 📦 Using the Shared Library Package
 
@@ -63,37 +81,102 @@ Or run it in watch mode during development:
 bun run dev:lib
 ```
 
+## 🗄️ Database Setup
+
+This template uses **Drizzle ORM** with **PostgreSQL**. The database schema is defined in `backend/src/db/schema/`.
+
+### Setup Steps
+
+1. **Set up your database** (local PostgreSQL or cloud provider)
+
+2. **Configure environment variables** in `backend/.env`:
+
+   ```bash
+   DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+   PORT=3000
+   ```
+
+3. **Create your schema** in `backend/src/db/schema/` (e.g., `users.ts`, `posts.ts`)
+
+4. **Generate migrations:**
+
+   ```bash
+   bun run --filter @thunder-app/backend db:generate
+   ```
+
+5. **Push schema to database:**
+
+   ```bash
+   bun run --filter @thunder-app/backend db:push
+   ```
+
+   Or run migrations:
+
+   ```bash
+   bun run --filter @thunder-app/backend db:migrate
+   ```
+
+6. **Open Drizzle Studio** to view/edit data:
+
+   ```bash
+   bun run --filter @thunder-app/backend db:studio
+   ```
+
 ## 🛠️ Tech Stack
 
-- **Frontend:** React 19 + Vite + TypeScript
-- **Backend:** HonoJS + TypeScript
-- **Package Manager:** Bun
-- **Language:** TypeScript 5.9
-- **Code Quality:** ESLint + Prettier
+### Frontend
 
-## 🔧 Defaults & Env
+- **React 19** - UI library
+- **Vite 5** - Build tool and dev server
+- **TypeScript 5.9** - Type safety
+- **Tailwind CSS v4** - Styling
+- **React Query (@tanstack/react-query)** - Data fetching and caching
+- **Zod v4** - Runtime type validation
 
-- Backend port: `3000`
-- Frontend port: `5173`
-- Frontend `VITE_BACKEND_URL`: `http://localhost:3000`
+### Backend
 
-Generated env files:
+- **Hono v4** - Fast web framework
+- **TypeScript 5.9** - Type safety
+- **Drizzle ORM** - Type-safe SQL ORM
+- **PostgreSQL** - Database (via `postgres` driver)
+- **Zod v4** - Runtime type validation
+
+### Shared
+
+- **Bun** - Runtime and package manager
+- **ESLint** - Code linting
+- **Prettier** - Code formatting
+
+## 🔧 Environment Variables
+
+### Backend (`backend/.env`)
 
 ```bash
-# backend/.env
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 PORT=3000
+```
 
-# frontend/.env
+- `DATABASE_URL` - **Required**. PostgreSQL connection string
+- `PORT` - Backend server port (default: `3000`)
+
+### Frontend (`frontend/.env`)
+
+```bash
 VITE_BACKEND_URL=http://localhost:3000
 VITE_PORT=5173
 ```
 
-Notes:
+- `VITE_BACKEND_URL` - Backend API URL (default: `http://localhost:3000`)
+- `VITE_PORT` - Frontend dev server port (default: `5173`)
 
-- Vite reads `frontend/.env` at config time; restart dev server after changes
-- All packages use TypeScript (strict); ESLint + Prettier configured
+**Note:** Vite reads environment variables at config time; restart the dev server after changing `.env` files.
 
----
+## 📝 Code Quality
+
+- **TypeScript** - Strict mode enabled across all packages
+- **ESLint** - Configured with React, TypeScript, and sorting rules
+- **Prettier** - Automatic code formatting
+- **Type checking** - Run `bun run typecheck` to verify all packages
 
 ## 🔧 Publishing This Template (For Maintainers)
 
