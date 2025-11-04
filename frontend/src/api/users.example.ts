@@ -9,7 +9,7 @@ const usersSchema = z.array(
     email: z.email(),
     id: z.string(),
     name: z.string(),
-  })
+  }),
 );
 
 export async function fetchUsers(): Promise<User[]> {

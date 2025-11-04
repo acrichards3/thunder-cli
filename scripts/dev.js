@@ -37,7 +37,7 @@ function spawnWithLabel(service, command, args, cwd) {
   const label = `${config.color.bold(`[${config.emoji} ${config.name}]`)}`;
 
   console.log(
-    `${label} ${chalk.gray(`Starting ${config.name.toLowerCase()}...`)}`
+    `${label} ${chalk.gray(`Starting ${config.name.toLowerCase()}...`)}`,
   );
 
   const proc = spawn(command, args, {
@@ -87,7 +87,7 @@ const libProc = spawnWithLabel(
   "lib",
   "bun",
   ["run", "dev"],
-  resolve(rootDir, "lib")
+  resolve(rootDir, "lib"),
 );
 
 // Start backend
@@ -95,7 +95,7 @@ const backendProc = spawnWithLabel(
   "backend",
   "bun",
   ["run", "dev"],
-  resolve(rootDir, "backend")
+  resolve(rootDir, "backend"),
 );
 
 // Start frontend
@@ -103,7 +103,7 @@ const frontendProc = spawnWithLabel(
   "frontend",
   "bun",
   ["run", "dev"],
-  resolve(rootDir, "frontend")
+  resolve(rootDir, "frontend"),
 );
 
 // Wait a moment for services to start, then show status
@@ -113,13 +113,13 @@ setTimeout(() => {
   console.log();
   console.log(chalk.bold("Services running:"));
   console.log(
-    `  ${services.frontend.emoji} ${chalk.cyan.bold("Frontend")}  → http://localhost:${services.frontend.port}`
+    `  ${services.frontend.emoji} ${chalk.cyan.bold("Frontend")}  → http://localhost:${services.frontend.port}`,
   );
   console.log(
-    `  ${services.backend.emoji} ${chalk.green.bold("Backend")}  → http://localhost:${services.backend.port}`
+    `  ${services.backend.emoji} ${chalk.green.bold("Backend")}  → http://localhost:${services.backend.port}`,
   );
   console.log(
-    `  ${services.lib.emoji} ${chalk.yellow.bold("Lib")}      → Watching for changes`
+    `  ${services.lib.emoji} ${chalk.yellow.bold("Lib")}      → Watching for changes`,
   );
   console.log();
   console.log(chalk.gray("Press Ctrl+C to stop all services"));

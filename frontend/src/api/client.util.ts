@@ -7,7 +7,7 @@ const errorResponseSchema = z.object({
 
 export async function apiFetch(
   path: string,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<unknown> {
   const url = `${env.VITE_BACKEND_URL}${path}`;
 
