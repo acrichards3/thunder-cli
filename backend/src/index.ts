@@ -1,7 +1,7 @@
-import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { greet, type User } from "@thunder-app/lib";
 import { env } from "./env/env";
+import { Hono } from "hono";
+import type { User } from "@thunder-app/lib";
 
 const app = new Hono();
 
@@ -13,7 +13,7 @@ app.use(
 );
 
 app.get("/", (c) => {
-  return c.json({ message: greet("Thunder App API") });
+  return c.json({ message: "Hello from Hono!" });
 });
 
 app.get("/api/users", (c) => {
