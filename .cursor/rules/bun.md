@@ -1,0 +1,35 @@
+## Runtime Environment
+
+This project uses **Bun** as the runtime, NOT Node.js. Always prefer Bun-specific APIs and conventions.
+
+### Rules:
+
+1. **Package Management**: Use `bun` commands instead of `npm` or `yarn`
+   - Use `bun add` instead of `npm install`
+   - Use `bun run` instead of `npm run`
+   - Use `bun install` instead of `npm install`
+
+2. **File I/O**: Prefer Bun's native file APIs where applicable (backend)
+   - Use `Bun.file()` for file operations instead of Node's `fs` module when possible
+   - Prefer Bun's `Bun.write()` for writing files
+   - Prefer Bun's `Bun.env` for accessing environment variables
+
+3. **Import Statements**: Use ESM (ES modules) syntax throughout
+   - This project uses `"type": "module"` in package.json
+
+4. **Scripts**: All scripts should be written for Bun compatibility
+   - Avoid Node-specific APIs unless necessary
+   - When Node APIs are needed, use them through Bun's compatibility layer
+
+5. **Build Tools**:
+   - Use Bun's built-in bundler when appropriate
+   - Prefer Bun-compatible tools (e.g., `bunx` instead of `npx`)
+
+6. **Dependencies**: Choose packages that work well with Bun
+   - Prioritize packages with Bun support or compatibility
+   - Test compatibility before suggesting Node-only alternatives
+
+7. **Examples**: When providing code examples, use Bun conventions:
+   - Show `bunx` instead of `npx`
+   - Show `bun add` instead of `npm install`
+   - Use Bun's native APIs when demonstrating file operations or other runtime features

@@ -1,0 +1,38 @@
+## Code Verification Requirements
+
+After making any code changes, you MUST verify that the code passes all quality checks before considering the task complete.
+
+### Mandatory Verification Steps:
+
+1. **Check for Linting Errors**:
+   - Use the `read_lints` tool to check for any linting errors in the files you modified
+   - If linting errors are found, fix them immediately before proceeding
+   - Run `bun run lint` to verify the full linting pipeline passes
+
+2. **Verify Build Passes**:
+   - Run `bun run build` or the appropriate build command to ensure the project builds successfully
+   - Fix any build errors before considering the task complete
+   - Ensure all TypeScript compilation passes without errors
+
+3. **Type Checking**:
+   - Verify TypeScript type checking passes with `bun run typecheck`
+   - Fix any type errors that arise from your changes
+
+### Rules:
+
+- **Never skip verification**: Always verify linting and builds pass after making changes
+- **Fix errors immediately**: If linting or build errors are found, fix them as part of the same task
+- **Use available tools**: Use `read_lints` tool to check for linting errors in modified files
+- **Complete verification**: Don't consider a task done until all checks pass
+
+### Expected Behavior:
+
+When you make code changes:
+
+1. Make the requested changes
+2. Check for linting errors using `read_lints` on modified files
+3. Fix any linting errors found
+4. Verify the build passes (run `bun run build` if needed)
+5. Only then consider the task complete
+
+If you introduce errors, you must fix them before marking the task as done.

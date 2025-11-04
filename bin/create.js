@@ -12,6 +12,7 @@ import { resolve, dirname, join, basename } from "path";
 import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
 import readline from "readline";
+import chalk from "chalk";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,7 +29,7 @@ async function promptName(defaultName) {
       input: process.stdin,
       output: process.stdout,
     });
-    rl.question(`Project name (${defaultName}): `, (answer) => {
+    rl.question(chalk.cyan(`Project name (${defaultName}): `), (answer) => {
       rl.close();
       const n = (answer || defaultName)
         .toLowerCase()
@@ -39,6 +40,21 @@ async function promptName(defaultName) {
 }
 
 async function main() {
+  // Display banner
+  console.log();
+  console.log(
+    chalk.yellow.bold("╔════════════════════════════════════════════════════╗")
+  );
+  console.log(
+    chalk.yellow.bold("║") +
+      chalk.yellow.bold.underline("  CREATE THUNDER APP") +
+      chalk.yellow.bold("                           ║")
+  );
+  console.log(
+    chalk.yellow.bold("╚════════════════════════════════════════════════════╝")
+  );
+  console.log();
+
   const cwd = process.cwd();
   const defaultName = "thunder-app";
   let projectName = argName;
@@ -48,12 +64,33 @@ async function main() {
   projectName =
     projectName.toLowerCase().replace(/[^a-z0-9-]/g, "-") || defaultName;
 
+  // Ask about GitHub CI/CD pipeline
+  const askYesNo = async (question, defaultYes = true) => {
+    return await new Promise((resolveAns) => {
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+      const suffix = defaultYes ? "(Y/n)" : "(y/N)";
+      rl.question(chalk.cyan(`${question} ${suffix} `), (answer) => {
+        rl.close();
+        const a = (answer || "").trim().toLowerCase();
+        if (!a) return resolveAns(defaultYes);
+        resolveAns(a === "y" || a === "yes");
+      });
+    });
+  };
+
+  const includeGithub = await askYesNo("Include GitHub CI/CD pipeline?", true);
+
   const targetDir = resolve(cwd, projectName);
   if (existsSync(targetDir)) {
     const contents = readdirSync(targetDir);
     if (contents.length > 0) {
       console.error(
-        `Error: directory "${projectName}" already exists and is not empty.`
+        chalk.red.bold(
+          `Error: directory "${projectName}" already exists and is not empty.`
+        )
       );
       process.exit(1);
     }
@@ -63,6 +100,9 @@ async function main() {
 
   // Copy files from templateRoot to targetDir, excluding unwanted dirs/files
   const ignore = new Set(["node_modules", ".git", ".DS_Store", "bin"]);
+  if (!includeGithub) {
+    ignore.add(".github");
+  }
   const shouldIgnore = (name) => ignore.has(name);
 
   const copyRecursive = (src, dest) => {
@@ -85,7 +125,9 @@ async function main() {
   // Update package names and scripts in the copied project
   const pkgPath = resolve(targetDir, "package.json");
   if (!existsSync(pkgPath)) {
-    console.error("Error: package.json not found in target directory");
+    console.error(
+      chalk.red.bold("Error: package.json not found in target directory")
+    );
     process.exit(1);
   }
 
@@ -163,64 +205,55 @@ async function main() {
   replaceInSource(resolve(targetDir, "frontend"));
 
   // Optional installs
-  const askYesNo = async (question, defaultYes = true) => {
-    return await new Promise((resolveAns) => {
-      const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-      });
-      const suffix = defaultYes ? "(Y/n)" : "(y/N)";
-      rl.question(`${question} ${suffix} `, (answer) => {
-        rl.close();
-        const a = (answer || "").trim().toLowerCase();
-        if (!a) return resolveAns(defaultYes);
-        resolveAns(a === "y" || a === "yes");
-      });
-    });
-  };
-
   const doInstall = await askYesNo(
     "Run bun install for all workspaces now?",
     true
   );
   if (doInstall) {
-    console.log("\n› Installing dependencies (root workspace)...\n");
+    console.log(
+      chalk.blue.bold("\n› Installing dependencies (root workspace)...\n")
+    );
     const res = spawnSync("bun", ["install"], {
       cwd: targetDir,
       stdio: "inherit",
     });
     if (res.status !== 0) {
-      console.error("bun install failed. You can run it manually later.");
+      console.error(
+        chalk.red("bun install failed. You can run it manually later.")
+      );
     } else {
-      const doBuildLib = await askYesNo("Build shared lib package now?", true);
-      if (doBuildLib) {
-        console.log("\n› Building lib...\n");
-        const buildRes = spawnSync("bun", ["run", "build:lib"], {
-          cwd: targetDir,
-          stdio: "inherit",
-        });
-        if (buildRes.status !== 0) {
-          console.error(
-            "lib build failed. You can run 'bun run build:lib' later."
-          );
-        }
+      console.log(chalk.blue.bold("\n› Building lib...\n"));
+      const buildRes = spawnSync("bun", ["run", "build:lib"], {
+        cwd: targetDir,
+        stdio: "inherit",
+      });
+      if (buildRes.status !== 0) {
+        console.error(
+          chalk.red("lib build failed. You can run 'bun run build:lib' later.")
+        );
       }
     }
   }
 
-  console.log(`\n✓ Project initialized as "${projectName}"\n`);
-  console.log("🚀 Thunder App template initialized!\n");
-  console.log(`📍 Project location: ${targetDir}\n`);
-  console.log("Next steps:");
-  console.log(`  1. cd ${projectName}`);
+  console.log();
+  console.log(chalk.green.bold(`✓ Project initialized as "${projectName}"`));
+  console.log(chalk.yellow.bold("🚀 Thunder App template initialized!"));
+  console.log();
+  console.log(chalk.cyan.bold("📍 Project location:"), chalk.gray(targetDir));
+  console.log();
+  console.log(chalk.cyan.bold("Next steps:"));
+  console.log(chalk.white(`  1. cd ${projectName}`));
   console.log(
-    "  2. bun install    # installs all workspaces (frontend, lib, backend)"
+    chalk.white(
+      "  2. bun install    # installs all workspaces (frontend, lib, backend)"
+    )
   );
-  console.log("  3. bun run build:lib");
-  console.log("  4. bun run dev\n");
+  console.log(chalk.white("  3. bun run build:lib"));
+  console.log(chalk.white("  4. bun run dev"));
+  console.log();
 }
 
 main().catch((err) => {
-  console.error(err);
+  console.error(chalk.red.bold("Error:"), chalk.red(err));
   process.exit(1);
 });

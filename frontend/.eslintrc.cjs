@@ -1,29 +1,31 @@
+/* eslint-env node */
 module.exports = {
-  root: true,
-  parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint", "react", "react-hooks", "sort-keys", "typescript-sort-keys"],
+  env: {
+    browser: true,
+    es2022: true,
+  },
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
   ],
-  env: {
-    browser: true,
-    es2022: true,
-  },
+  parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 2022,
-    sourceType: "module",
     ecmaFeatures: {
       jsx: true,
     },
+    ecmaVersion: 2022,
+    sourceType: "module",
   },
-  settings: {
-    react: {
-      version: "detect",
-    },
-  },
+  plugins: [
+    "@typescript-eslint",
+    "react",
+    "react-hooks",
+    "sort-keys",
+    "typescript-sort-keys",
+  ],
+  root: true,
   rules: {
     "@typescript-eslint/consistent-type-imports": [
       "error",
@@ -36,17 +38,19 @@ module.exports = {
     "react/jsx-sort-props": [
       "error",
       {
-        callbacksLast: false,
         ignoreCase: false,
         noSortAlphabetically: false,
-        reservedFirst: true,
-        shorthandFirst: false,
-        shorthandLast: false,
+        reservedFirst: false,
       },
     ],
     "react/react-in-jsx-scope": "off",
     "sort-keys": ["error", "asc", { caseSensitive: false, natural: false }],
     "typescript-sort-keys/interface": "error",
     "typescript-sort-keys/string-enum": "error",
+  },
+  settings: {
+    react: {
+      version: "detect",
+    },
   },
 };

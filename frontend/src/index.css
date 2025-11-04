@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body,
+main,
+#root {
+  display: flex;
+  flex: 1;
+  background-color: #1a202c;
+  margin: 0;
+  padding: 0;
+}

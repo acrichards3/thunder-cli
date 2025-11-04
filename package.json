@@ -19,10 +19,12 @@
   "files": [
     "package.json",
     "bin",
+    "scripts",
     "frontend",
     "backend",
     "lib",
     ".gitignore",
+    ".cursor",
     "*.json",
     "*.ts",
     "*.config.*",
@@ -39,7 +41,7 @@
     "build:backend": "bun run --filter @thunder-app/backend build",
     "build:frontend": "bun run --filter @thunder-app/frontend build",
     "build:lib": "bun run --filter @thunder-app/lib build",
-    "dev": "bun run --filter '*' dev",
+    "dev": "node scripts/dev.js",
     "dev:backend": "bun run --filter @thunder-app/backend dev",
     "dev:frontend": "bun run --filter @thunder-app/frontend dev",
     "dev:lib": "bun run --filter @thunder-app/lib dev",
@@ -49,6 +51,9 @@
     "lint:eslint": "bun run --filter '*' lint",
     "lint:fix": "bun run format && bun run --filter '*' lint --fix",
     "typecheck": "bun tsc -b --clean && bun tsc -b"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0"
   },
   "devDependencies": {
     "eslint-plugin-sort-keys": "^2.3.5",
