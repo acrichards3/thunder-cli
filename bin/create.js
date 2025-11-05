@@ -115,6 +115,10 @@ async function main() {
         if (!existsSync(destPath)) mkdirSync(destPath, { recursive: true });
         copyRecursive(srcPath, destPath);
       } else {
+        // Skip .env files but allow .env.example files
+        if (entry.name === ".env") {
+          continue;
+        }
         copyFileSync(srcPath, destPath);
       }
     }

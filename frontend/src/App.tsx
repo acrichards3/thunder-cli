@@ -1,10 +1,10 @@
-import { fetchUsers } from "./api/users.example";
+import { helloExample } from "./api/hello.example";
 import { useQuery } from "@tanstack/react-query";
 
 function App() {
   const { data, isLoading, error } = useQuery({
-    queryFn: fetchUsers,
-    queryKey: ["users"],
+    queryFn: helloExample,
+    queryKey: ["helloWorld"],
   });
 
   return (
@@ -20,7 +20,6 @@ function App() {
       <span className="text-gray-300 p-4 text-lg">
         Your modern full-stack application template
       </span>
-
       {isLoading ? (
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       ) : error ? (
@@ -31,28 +30,8 @@ function App() {
           )}
         </div>
       ) : data ? (
-        <div className="flex gap-4">
-          {data.map((user) => (
-            <div
-              className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 hover:bg-white/15 transition-colors"
-              key={user.id}
-            >
-              <div className="flex gap-2 items-center p-2">
-                <div className="h-12 w-12 rounded-full bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-white font-semibold text-lg">
-                    {user.name}
-                  </h3>
-                  <span className="text-gray-300 text-sm">{user.email}</span>
-                </div>
-              </div>
-              <div className="border-t border-white/10">
-                <span className="text-gray-400 text-xs">ID: {user.id}</span>
-              </div>
-            </div>
-          ))}
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+          <span className="text-white text-lg">{data.message}</span>
         </div>
       ) : null}
     </main>

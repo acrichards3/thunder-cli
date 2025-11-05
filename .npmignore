@@ -20,6 +20,14 @@ dist/
 .env
 .env.local
 .env.*.local
+**/.env
+**/.env.*
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+lib/.env
+lib/.env.*
 
 # IDE
 .vscode/
