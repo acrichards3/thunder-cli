@@ -24,7 +24,7 @@ app.use(
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     origin: "*", // TODO: Update me!
-  })
+  }),
 );
 
 // Initialize auth config
@@ -46,8 +46,11 @@ app.use(
     ],
     secret: env.AUTH_SECRET,
     session: { strategy: "database" },
-  }))
+  })),
 );
+
+// Mount auth routes (required for sign-in to work)
+app.use("/api/auth/*", authHandler());
 
 // Set up protected routes
 app.use("/api/protected/*", verifyAuth());
@@ -60,6 +63,10 @@ app.get("/api/users", async (c) => {
   const db = c.get("db");
   const allUsers = await db.select().from(users);
   return c.json(allUsers);
+});
+
+app.get("/api/protected/test", (c) => {
+  return c.json({ message: "This message is from a protected route!" });
 });
 
 console.log(`🚀 Server running on http://localhost:${env.PORT}`);
