@@ -154,6 +154,7 @@ async function main() {
   rootPkg.private = true;
   delete rootPkg.postinstall;
   delete rootPkg.bin;
+  delete rootPkg.files;
 
   const newPrefix = `@${projectName}/`;
   const replacePrefixes = (s) =>
