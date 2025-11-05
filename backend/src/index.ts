@@ -12,7 +12,7 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// ! Update CORS settings as needed
+// Update CORS settings as needed
 app.use(
   "*",
   cors({
