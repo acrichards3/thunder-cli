@@ -19,13 +19,17 @@
   "files": [
     "bin",
     "scripts",
+    ".github",
     "backend/src",
     "backend/drizzle.config.ts",
+    "backend/tsconfig.drizzle.json",
     "backend/package.json",
     "backend/tsconfig.json",
+    "backend/.env.example",
     "frontend/src",
     "frontend/public",
     "frontend/index.html",
+    "frontend/.env.example",
     "frontend/package.json",
     "frontend/vite.config.ts",
     "frontend/tailwind.config.js",
@@ -34,8 +38,10 @@
     "lib/src",
     "lib/package.json",
     "lib/tsconfig.json",
+    ".cursor",
     ".gitignore",
     "README.md",
+    "tsconfig.json",
     "package.json"
   ],
   "workspaces": [
