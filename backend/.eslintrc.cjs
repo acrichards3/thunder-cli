@@ -1,16 +1,16 @@
 module.exports = {
-  root: true,
-  parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint", "sort-keys", "typescript-sort-keys"],
-  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   env: {
-    node: true,
     es2022: true,
+    node: true,
   },
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: "module",
   },
+  plugins: ["@typescript-eslint", "sort-keys", "typescript-sort-keys"],
+  root: true,
   rules: {
     "@typescript-eslint/consistent-type-imports": [
       "error",

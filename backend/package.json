@@ -14,6 +14,9 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@auth/core": "^0.34.3",
+    "@auth/drizzle-adapter": "^1.11.1",
+    "@hono/auth-js": "^1.1.0",
     "@thunder-app/lib": "workspace:*",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.0.0",
