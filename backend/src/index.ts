@@ -1,7 +1,11 @@
+import Google from "@auth/core/providers/google";
+import { accounts, sessions, verificationTokens } from "./db/schema/auth";
 import { cors } from "hono/cors";
 import { db } from "./db/index";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { env } from "./env/env";
 import { Hono } from "hono";
+import { initAuthConfig, verifyAuth, authHandler } from "@hono/auth-js";
 import { users } from "./db/schema/users";
 
 const app = new Hono<{ Variables: { db: typeof db } }>();
@@ -19,9 +23,34 @@ app.use(
     allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
-    origin: "*",
-  }),
+    origin: "*", // TODO: Update me!
+  })
 );
+
+// Initialize auth config
+app.use(
+  "*",
+  initAuthConfig(() => ({
+    adapter: DrizzleAdapter(db, {
+      accountsTable: accounts,
+      sessionsTable: sessions,
+      usersTable: users,
+      verificationTokensTable: verificationTokens,
+    }),
+    // ? - Manually add new providers here
+    providers: [
+      Google({
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+      }),
+    ],
+    secret: env.AUTH_SECRET,
+    session: { strategy: "database" },
+  }))
+);
+
+// Set up protected routes
+app.use("/api/protected/*", verifyAuth());
 
 app.get("/", (c) => {
   return c.json({ message: "Hello from Hono!" });
