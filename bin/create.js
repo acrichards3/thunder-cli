@@ -99,7 +99,17 @@ async function main() {
   }
 
   // Copy files from templateRoot to targetDir, excluding unwanted dirs/files
-  const ignore = new Set(["node_modules", ".git", ".DS_Store", "bin"]);
+  const ignore = new Set([
+    "node_modules",
+    ".git",
+    ".DS_Store",
+    "bin",
+    "dist",
+    ".vite",
+    ".cache",
+    "coverage",
+    ".nyc_output",
+  ]);
   if (!includeGithub) {
     ignore.add(".github");
   }
@@ -117,6 +127,10 @@ async function main() {
       } else {
         // Skip .env files but allow .env.example files
         if (entry.name === ".env") {
+          continue;
+        }
+        // Skip .tsbuildinfo files
+        if (entry.name.endsWith(".tsbuildinfo")) {
           continue;
         }
         copyFileSync(srcPath, destPath);
