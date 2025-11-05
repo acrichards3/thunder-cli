@@ -20,7 +20,7 @@ app.use(
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     origin: "*",
-  }),
+  })
 );
 
 app.get("/", (c) => {
