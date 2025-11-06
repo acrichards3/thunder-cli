@@ -24,19 +24,35 @@ app.use(
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     origin: "*", // TODO: Update me!
-  }),
+  })
 );
 
 // Initialize auth config
 app.use(
   "*",
-  initAuthConfig(() => ({
+  initAuthConfig((_c) => ({
     adapter: DrizzleAdapter(db, {
       accountsTable: accounts,
       sessionsTable: sessions,
       usersTable: users,
       verificationTokensTable: verificationTokens,
     }),
+    basePath: "/api/auth",
+    callbacks: {
+      async redirect({ baseUrl, url }) {
+        // Redirect to frontend after sign-in/sign-out
+        const frontendUrl = env.FRONTEND_URL;
+        const frontendOrigin = new URL(frontendUrl).origin;
+        const backendOrigin = new URL(baseUrl).origin;
+        // If url is relative, make it absolute using the frontend URL
+        if (url.startsWith("/")) return `${frontendUrl}${url}`;
+
+        const urlObj = new URL(url);
+        if (urlObj.origin === backendOrigin) return frontendUrl;
+        if (urlObj.origin === frontendOrigin) return url;
+        return frontendUrl;
+      },
+    },
     // ? - Manually add new providers here
     providers: [
       Google({
@@ -46,7 +62,8 @@ app.use(
     ],
     secret: env.AUTH_SECRET,
     session: { strategy: "database" },
-  })),
+    trustHost: true, // Required for local development
+  }))
 );
 
 // Mount auth routes (required for sign-in to work)

@@ -21,5 +21,11 @@ export default defineConfig({
   server: {
     cors: false,
     port: vitePort,
+    proxy: {
+      "/api/auth": {
+        changeOrigin: true,
+        target: process.env.VITE_BACKEND_URL ?? "http://localhost:3000",
+      },
+    },
   },
 });
