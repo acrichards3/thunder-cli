@@ -35,6 +35,9 @@ module.exports = {
       },
     ],
     "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
+    "@typescript-eslint/no-non-null-asserted-nullish-coalescing": "error",
     "react/jsx-sort-props": [
       "error",
       {

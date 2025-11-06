@@ -1,0 +1,62 @@
+import type { MiddlewareHandler } from "hono";
+
+type RateLimitOptions = {
+  keyGenerator?: (ip: string, path: string) => string;
+  limit: number; // e.g. 10
+  windowMs: number; // e.g. 60_000
+};
+
+type Bucket = { count: number; resetAt: number };
+
+const buckets = new Map<string, Bucket>();
+
+function getClientIp(headers: Headers): string {
+  return (
+    headers.get("cf-connecting-ip") ||
+    headers.get("x-real-ip") ||
+    (headers.get("x-forwarded-for") || "").split(",")[0].trim() ||
+    ""
+  );
+}
+
+export function rateLimit(options: RateLimitOptions): MiddlewareHandler {
+  const { windowMs, limit } = options;
+  const genKey =
+    options.keyGenerator ?? ((ip: string, path: string) => `${ip}:${path}`);
+
+  return async (c, next) => {
+    const ip = getClientIp(c.req.raw.headers);
+    const path = new URL(c.req.url).pathname;
+    const key = genKey(ip, path);
+    const now = Date.now();
+
+    const bucket = buckets.get(key);
+    if (!bucket || now > bucket.resetAt) {
+      buckets.set(key, { count: 1, resetAt: now + windowMs });
+      await next();
+      return;
+    }
+
+    bucket.count += 1;
+    if (bucket.count > limit) {
+      const retryAfterSec = Math.max(
+        1,
+        Math.ceil((bucket.resetAt - now) / 1000),
+      );
+      c.header("Retry-After", String(retryAfterSec));
+      c.header("X-RateLimit-Limit", String(limit));
+      c.header("X-RateLimit-Remaining", "0");
+      c.header("X-RateLimit-Reset", String(Math.floor(bucket.resetAt / 1000)));
+      return c.text("Too Many Requests", 429);
+    }
+
+    c.header("X-RateLimit-Limit", String(limit));
+    c.header(
+      "X-RateLimit-Remaining",
+      String(Math.max(0, limit - bucket.count)),
+    );
+    c.header("X-RateLimit-Reset", String(Math.floor(bucket.resetAt / 1000)));
+
+    await next();
+  };
+}

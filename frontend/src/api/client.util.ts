@@ -5,14 +5,43 @@ const errorResponseSchema = z.object({
   message: z.unknown().optional(),
 });
 
+function getCookie(name: string): string | undefined {
+  return document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(name + "="))
+    ?.split("=")[1];
+}
+
+function getCsrfToken(): string | undefined {
+  const possibleNames = ["csrf-token", "XSRF-TOKEN", "_csrf", "csrfToken"];
+  for (const n of possibleNames) {
+    const v = getCookie(n);
+    if (v) return decodeURIComponent(v);
+  }
+  return undefined;
+}
+
 export async function apiFetch(
   path: string,
   init?: RequestInit,
 ): Promise<unknown> {
   const url = `${env.VITE_BACKEND_URL}${path}`;
 
+  const method = (init?.method ?? "GET").toUpperCase();
+  const headers = new Headers(init?.headers ?? {});
+  if (!headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    const token = getCsrfToken();
+    if (token && !headers.has("X-CSRF-Token"))
+      headers.set("X-CSRF-Token", token);
+  }
+
   const response = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    credentials: "include",
+    headers,
     ...init,
   });
 

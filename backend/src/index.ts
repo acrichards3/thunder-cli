@@ -1,14 +1,44 @@
 import Google from "@auth/core/providers/google";
 import { accounts, sessions, verificationTokens } from "./db/schema/auth";
 import { cors } from "hono/cors";
+import { csrf } from "hono/csrf";
 import { db } from "./db/index";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { createSecureAdapter } from "./security/secureAdapter";
 import { env } from "./env/env";
 import { Hono } from "hono";
 import { initAuthConfig, verifyAuth, authHandler } from "@hono/auth-js";
+import { rateLimit } from "./security/rateLimit";
+import { secureHeaders } from "hono/secure-headers";
 import { users } from "./db/schema/users";
 
 const app = new Hono<{ Variables: { db: typeof db } }>();
+
+// !- Update CORS settings as needed
+app.use(
+  "*",
+  cors({
+    allowHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+    origin: env.FRONTEND_URL,
+  }),
+);
+
+// Set secure headers
+app.use("*", secureHeaders());
+
+// Set CSRF protection
+app.use("*", csrf());
+
+// !- Rate limit auth endpoints (sign-in, callbacks, etc.)
+app.use(
+  "/api/auth/*",
+  rateLimit({
+    limit: 10,
+    windowMs: 60_000,
+  }),
+);
 
 // Middleware to set db in context
 app.use("*", async (c, next) => {
@@ -16,27 +46,19 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// Update CORS settings as needed
-app.use(
-  "*",
-  cors({
-    allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-    origin: "*", // TODO: Update me!
-  }),
-);
-
 // Initialize auth config
 app.use(
   "*",
   initAuthConfig((_c) => ({
-    adapter: DrizzleAdapter(db, {
-      accountsTable: accounts,
-      sessionsTable: sessions,
-      usersTable: users,
-      verificationTokensTable: verificationTokens,
-    }),
+    adapter: createSecureAdapter(
+      DrizzleAdapter(db, {
+        accountsTable: accounts,
+        sessionsTable: sessions,
+        usersTable: users,
+        verificationTokensTable: verificationTokens,
+      }),
+      { oauthEncryptionKey: env.OAUTH_TOKEN_ENCRYPTION_KEY },
+    ),
     basePath: "/api/auth",
     callbacks: {
       async redirect({ baseUrl, url }) {
@@ -62,7 +84,7 @@ app.use(
     ],
     secret: env.AUTH_SECRET,
     session: { strategy: "database" },
-    trustHost: true, // Required for local development
+    trustHost: env.ENVIRONMENT === "development" ? true : false,
   })),
 );
 
@@ -72,18 +94,9 @@ app.use("/api/auth/*", authHandler());
 // Set up protected routes
 app.use("/api/protected/*", verifyAuth());
 
+// !- You can delete this example route
 app.get("/", (c) => {
   return c.json({ message: "Hello from Hono!" });
-});
-
-app.get("/api/users", async (c) => {
-  const db = c.get("db");
-  const allUsers = await db.select().from(users);
-  return c.json(allUsers);
-});
-
-app.get("/api/protected/test", (c) => {
-  return c.json({ message: "This message is from a protected route!" });
 });
 
 console.log(`🚀 Server running on http://localhost:${env.PORT}`);
