@@ -235,6 +235,24 @@ For production:
 - **ESLint** - Code linting
 - **Prettier** - Code formatting
 
+## 🔒 Security Defaults in This Template
+
+Out of the box, the backend enables several defenses:
+
+- Secure headers via `hono/secure-headers`
+- CSRF protection via `hono/csrf`; the frontend sends `X-CSRF-Token` on mutating requests
+- CORS restricted to `FRONTEND_URL` with credentials and `X-CSRF-Token` allowed
+- Rate limiting on `/api/auth/*` (10 requests / 60s per IP+path) to mitigate brute force and callback abuse
+- Sessions and verification tokens are stored as SHA‑256 hashes (no plaintext)
+- OAuth tokens (access/refresh/id) can be encrypted at rest (AES‑256‑GCM) when you set `OAUTH_TOKEN_ENCRYPTION_KEY`
+
+Recommended hardening for production (left to end users):
+
+- Add a Content Security Policy (CSP) with nonces for scripts
+- Consider an Origin/Referer check for POST/PUT/PATCH/DELETE as defense‑in‑depth
+- Ensure cookies are `Secure`, `HttpOnly`, and `SameSite=Lax/Strict` behind HTTPS
+- If deploying multiple instances, replace in‑memory rate limiting with a shared store (e.g., Redis)
+
 ## 🔧 Environment Variables
 
 ### Backend (`backend/.env`)
@@ -257,6 +275,10 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 # Additional providers (optional)
 # GITHUB_CLIENT_ID=your-github-client-id
 # GITHUB_CLIENT_SECRET=your-github-client-secret
+
+# Token encryption (optional)
+# When set, OAuth tokens are encrypted at rest (AES-256-GCM). Generate with: openssl rand -base64 32
+OAUTH_TOKEN_ENCRYPTION_KEY=
 ```
 
 **Required variables:**
@@ -287,7 +309,11 @@ VITE_PORT=5173
 ## 📝 Code Quality
 
 - **TypeScript** - Strict mode enabled across all packages
-- **ESLint** - Configured with React, TypeScript, and sorting rules
+- **ESLint** - Type‑aware linting across workspaces (TS project aware):
+  - Prefer `??` over `||` for defaulting
+  - Flag impossible conditions (`@typescript-eslint/no-unnecessary-condition`)
+  - Enforce `import type` when symbols are used as types only
+  - JS configs like `postcss.config.js`, `tailwind.config.js` are ignored in typed linting
 - **Prettier** - Automatic code formatting
 - **Type checking** - Run `bun run typecheck` to verify all packages
 
@@ -303,10 +329,12 @@ To publish this template to npm so others can use it:
 
 2. **Update the version in package.json** (if needed)
 
-3. **Publish to npm:**
+3. **Bump a minor version and publish to npm:**
 
    ```bash
-   npm publish --access public
+npm version minor -m "chore: release %s"
+npm publish --access public
+git push --follow-tags
    ```
 
 4. **Users can then create projects with:**
