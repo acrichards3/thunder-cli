@@ -1,10 +1,10 @@
 import Google from "@auth/core/providers/google";
 import { accounts, sessions, verificationTokens } from "./db/schema/auth";
 import { cors } from "hono/cors";
+import { createSecureAdapter } from "./security/secureAdapter";
 import { csrf } from "hono/csrf";
 import { db } from "./db/index";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { createSecureAdapter } from "./security/secureAdapter";
 import { env } from "./env/env";
 import { Hono } from "hono";
 import { initAuthConfig, verifyAuth, authHandler } from "@hono/auth-js";

@@ -54,9 +54,7 @@ function App() {
       ) : error ? (
         <div className="flex flex-col gap-2 bg-red-500/10 border border-red-500/50 rounded-lg p-2 max-w-md">
           <span className="text-red-400 font-semibold">Error loading data</span>
-          {error && (
-            <span className="text-red-300 p-2 text-sm">{error.message}</span>
-          )}
+          <span className="text-red-300 p-2 text-sm">{error.message}</span>
         </div>
       ) : data && !session?.user ? (
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">

@@ -52,9 +52,7 @@ export function createSecureAdapter(
         sessionToken: hashToken(session.sessionToken),
       };
       const stored = await baseCreate(toStore);
-      return stored
-        ? { ...stored, sessionToken: session.sessionToken }
-        : stored;
+      return { ...stored, sessionToken: session.sessionToken };
     };
     adapter.createSession = createSession;
   }

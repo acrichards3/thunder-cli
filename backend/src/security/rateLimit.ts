@@ -11,12 +11,11 @@ type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
 
 function getClientIp(headers: Headers): string {
-  return (
-    headers.get("cf-connecting-ip") ||
-    headers.get("x-real-ip") ||
-    (headers.get("x-forwarded-for") || "").split(",")[0].trim() ||
-    ""
-  );
+  const cf = headers.get("cf-connecting-ip");
+  const real = headers.get("x-real-ip");
+  const xff = headers.get("x-forwarded-for");
+  const firstXff = xff?.split(",")[0]?.trim();
+  return cf ?? real ?? firstXff ?? "";
 }
 
 export function rateLimit(options: RateLimitOptions): MiddlewareHandler {

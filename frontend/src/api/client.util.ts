@@ -54,7 +54,7 @@ export async function apiFetch(
       : undefined;
     const parsed = errorResponseSchema.safeParse(body);
     const errorMessage =
-      parsed.success && parsed.data.message !== undefined
+      parsed.success && parsed.data.message != null
         ? String(parsed.data.message)
         : response.statusText;
     throw new Error(`Request failed ${response.status}: ${errorMessage}`);
