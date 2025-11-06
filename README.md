@@ -332,9 +332,9 @@ To publish this template to npm so others can use it:
 3. **Bump a minor version and publish to npm:**
 
    ```bash
-npm version minor -m "chore: release %s"
-npm publish --access public
-git push --follow-tags
+   npm version minor -m "chore: release %s"
+   npm publish --access public
+   git push --follow-tags
    ```
 
 4. **Users can then create projects with:**
