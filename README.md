@@ -29,9 +29,12 @@ The generator will:
 
 ## 📁 Project Structure
 
-- `frontend/` - Vite React application
-- `backend/` - HonoJS API server with Drizzle ORM
+- `frontend/` - Vite React application with Auth.js integration
+- `backend/` - HonoJS API server with Drizzle ORM and Auth.js
 - `lib/` - Shared TypeScript package used by both frontend and backend
+- `backend/src/db/schema/` - Database schema definitions
+  - `users.ts` - User table (merged with auth requirements)
+  - `auth.ts` - Auth.js tables (accounts, sessions, verification tokens)
 
 ## 💻 Development Commands (run from repo root)
 
@@ -89,38 +92,120 @@ This template uses **Drizzle ORM** with **PostgreSQL**. The database schema is d
 
 1. **Set up your database** (local PostgreSQL or cloud provider)
 
-2. **Configure environment variables** in `backend/.env`:
-
-   ```bash
-   DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-   PORT=3000
-   ```
+2. **Configure environment variables** in `backend/.env` (see [Environment Variables](#-environment-variables) section)
 
 3. **Create your schema** in `backend/src/db/schema/` (e.g., `users.ts`, `posts.ts`)
 
-4. **Generate migrations:**
-
-   ```bash
-   bun run --filter @thunder-app/backend db:generate
-   ```
-
-5. **Push schema to database:**
+4. **Push schema to database:**
 
    ```bash
    bun run --filter @thunder-app/backend db:push
    ```
 
-   Or run migrations:
+   Or generate and run migrations:
 
    ```bash
+   bun run --filter @thunder-app/backend db:generate
    bun run --filter @thunder-app/backend db:migrate
    ```
 
-6. **Open Drizzle Studio** to view/edit data:
+5. **Open Drizzle Studio** to view/edit data:
 
    ```bash
    bun run --filter @thunder-app/backend db:studio
    ```
+
+## 🔐 Authentication Setup
+
+This template includes **Auth.js** (formerly NextAuth) integration with **Google OAuth** as the default provider. Authentication uses database sessions for secure, server-side session management.
+
+### Backend Setup
+
+1. **Set up Google OAuth credentials:**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing one
+   - Enable the **Google+ API** or **People API**
+   - Go to **APIs & Services > Credentials**
+   - Create **OAuth 2.0 Client ID** (Web application)
+   - Add authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
+   - Copy the Client ID and Client Secret
+
+2. **Configure backend environment variables** in `backend/.env`:
+
+   ```bash
+   AUTH_SECRET=your-auth-secret-here  # Generate with: openssl rand -base64 32
+   DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+   FRONTEND_URL=http://localhost:5173  # Frontend URL for redirects
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   PORT=3000
+   ```
+
+3. **Database schema is already set up** - The auth tables (`auth_accounts`, `auth_sessions`, etc.) are defined in `backend/src/db/schema/auth.ts` and merged with your `users` table.
+
+4. **Push the auth schema to your database:**
+
+   ```bash
+   bun run --filter @thunder-app/backend db:push
+   ```
+
+### Frontend Setup
+
+1. **Configure frontend environment variables** in `frontend/.env`:
+
+   ```bash
+   VITE_BACKEND_URL=http://localhost:3000
+   VITE_PORT=5173
+   ```
+
+2. **The frontend is already configured** with `SessionProvider` and auth hooks. The sign-in button and session management are ready to use.
+
+3. **Vite proxy is configured** - Auth API requests (`/api/auth/*`) are automatically proxied to the backend via `vite.config.ts`. This allows the frontend to use relative URLs for auth endpoints.
+
+### Adding More Providers
+
+To add additional OAuth providers (GitHub, Discord, etc.):
+
+1. **Install the provider** (if needed):
+
+   ```bash
+   cd backend
+   bun add @auth/core/providers/github  # Example for GitHub
+   ```
+
+2. **Add provider to backend** in `backend/src/index.ts`:
+
+   ```typescript
+   import GitHub from "@auth/core/providers/github";
+
+   providers: [
+     Google({ clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET }),
+     GitHub({ clientId: env.GITHUB_CLIENT_ID, clientSecret: env.GITHUB_CLIENT_SECRET }),
+   ],
+   ```
+
+3. **Add environment variables** to `backend/.env`:
+
+   ```bash
+   GITHUB_CLIENT_ID=your-github-client-id
+   GITHUB_CLIENT_SECRET=your-github-client-secret
+   ```
+
+4. **Update Google Cloud Console** with additional redirect URIs if needed
+
+### Production Setup
+
+For production:
+
+1. **Update Google OAuth redirect URIs** in Google Cloud Console:
+   - Add: `https://your-api-domain.com/api/auth/callback/google`
+
+2. **Update environment variables:**
+   - Set `FRONTEND_URL` to your production frontend URL
+   - Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to production credentials
+   - Ensure `AUTH_SECRET` is a strong, random secret
+
+3. **Update CORS settings** in `backend/src/index.ts` to allow your production frontend domain
 
 ## 🛠️ Tech Stack
 
@@ -132,6 +217,7 @@ This template uses **Drizzle ORM** with **PostgreSQL**. The database schema is d
 - **Tailwind CSS v4** - Styling
 - **React Query (@tanstack/react-query)** - Data fetching and caching
 - **Zod v4** - Runtime type validation
+- **@hono/auth-js/react** - Auth.js React client hooks
 
 ### Backend
 
@@ -140,6 +226,8 @@ This template uses **Drizzle ORM** with **PostgreSQL**. The database schema is d
 - **Drizzle ORM** - Type-safe SQL ORM
 - **PostgreSQL** - Database (via `postgres` driver)
 - **Zod v4** - Runtime type validation
+- **Auth.js (@hono/auth-js)** - Authentication framework
+- **@auth/drizzle-adapter** - Drizzle adapter for Auth.js
 
 ### Shared
 
@@ -152,12 +240,37 @@ This template uses **Drizzle ORM** with **PostgreSQL**. The database schema is d
 ### Backend (`backend/.env`)
 
 ```bash
+# Database
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+
+# Server
 PORT=3000
+
+# Authentication
+AUTH_SECRET=your-auth-secret-here  # Generate with: openssl rand -base64 32
+FRONTEND_URL=http://localhost:5173  # Frontend URL for redirects after auth
+
+# Google OAuth (required)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Additional providers (optional)
+# GITHUB_CLIENT_ID=your-github-client-id
+# GITHUB_CLIENT_SECRET=your-github-client-secret
 ```
 
-- `DATABASE_URL` - **Required**. PostgreSQL connection string
+**Required variables:**
+
+- `DATABASE_URL` - PostgreSQL connection string
+- `AUTH_SECRET` - Secret for signing sessions (generate with `openssl rand -base64 32`)
+- `GOOGLE_CLIENT_ID` - Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET` - Google OAuth client secret
+
+**Optional variables:**
+
 - `PORT` - Backend server port (default: `3000`)
+- `FRONTEND_URL` - Frontend URL for redirects (default: `http://localhost:5173`)
+- Additional provider credentials for other OAuth providers
 
 ### Frontend (`frontend/.env`)
 

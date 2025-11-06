@@ -24,7 +24,7 @@ app.use(
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     origin: "*", // TODO: Update me!
-  })
+  }),
 );
 
 // Initialize auth config
@@ -63,7 +63,7 @@ app.use(
     secret: env.AUTH_SECRET,
     session: { strategy: "database" },
     trustHost: true, // Required for local development
-  }))
+  })),
 );
 
 // Mount auth routes (required for sign-in to work)
