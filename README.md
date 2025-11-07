@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="frontend/public/logos/thunder-app.png" alt="Thunder App Logo" width="200" />
+  <img src="frontend/public/thunder-app-logo.png" alt="Thunder App Logo" width="200" />
 </div>
 
 # Thunder App Template
