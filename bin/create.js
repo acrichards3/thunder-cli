@@ -40,7 +40,6 @@ async function promptName(defaultName) {
 }
 
 async function main() {
-  // Display banner
   console.log();
   console.log(
     chalk.cyan(`

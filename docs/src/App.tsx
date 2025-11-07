@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { FiChevronRight } from "react-icons/fi";
 import { TechCard } from "./components/TechCard";
 import type { TechCardProps } from "./components/TechCard";
 
@@ -18,7 +20,7 @@ const technologies = [
   },
   {
     description:
-      "Auth.js (formerly NextAuth.js) provides flexible, secure, and scalable authentication. It integrates seamlessly with your database and offers a simple API for managing users and sessions.",
+      "Auth.js provides flexible, secure, and scalable authentication. It integrates seamlessly with your database and offers a simple API for managing users and sessions.",
     href: "https://authjs.dev",
     logo: "/logos/authjs.png",
     name: "Auth.js",
@@ -68,32 +70,73 @@ const technologies = [
 ] as const satisfies TechCardProps[];
 
 export function App() {
+  const [copied, setCopied] = useState(false);
+  const command = "bun create thunder-app@latest";
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 3000);
+  };
+
   return (
-    <main className="flex flex-1 flex-col items-center gap-8 justify-start px-4 py-12">
-      <div className="flex flex-col items-center gap-4">
+    <main className="flex flex-1 flex-col items-center gap-32 justify-start px-4 py-12">
+      <div className="flex flex-col items-center gap-6">
         <img
           alt="Thunder App Logo"
-          className="h-20 w-20 drop-shadow-lg"
+          className="h-40 w-40 drop-shadow-lg"
           src="/logos/thunder-app.png"
         />
-        <h1 className="text-5xl font-bold text-white drop-shadow-md">
-          <span className="text-cyan-400">Thunder</span> Docs
+        <h1 className="text-7xl font-bold text-white drop-shadow-md text-center max-w-5xl">
+          Build <span className="text-cyan-400">lightning fast</span> full-stack
+          TypeScript apps with Bun
         </h1>
-        <p className="text-gray-300 text-lg">
-          Documentation and resources for Thunder App technologies
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
-        {technologies.map((tech) => (
-          <TechCard
-            description={tech.description}
-            href={tech.href}
-            key={tech.name}
-            logo={tech.logo}
-            name={tech.name}
+        <a
+          aria-label="View documentation"
+          className="group inline-flex items-center gap-2 text-cyan-300 hover:text-cyan-200 text-base sm:text-lg font-semibold tracking-wide transition-colors duration-200"
+          href="https://www.npmjs.com/package/create-thunder-app"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          View documentation
+          <FiChevronRight
+            aria-hidden="true"
+            className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5"
           />
-        ))}
+        </a>
+        <div className="flex items-center gap-3 bg-white/5 border border-cyan-500/20 rounded-lg px-4 py-3 max-w-2xl w-full group hover:border-cyan-400/40 transition-colors duration-200">
+          <code className="text-white text-lg font-mono flex-1">{command}</code>
+          <button
+            className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 rounded text-cyan-300 text-sm font-semibold transition-colors duration-200 cursor-pointer shrink-0"
+            onClick={handleCopy}
+            type="button"
+          >
+            {copied ? "Copied!" : "Copy"}
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-col items-center gap-6 w-full">
+        <div className="flex flex-col items-center gap-3 text-center max-w-4xl">
+          <h2 className="text-6xl font-bold text-white drop-shadow-md leading-tight">
+            Build fast. <span className="text-cyan-400">Run faster.</span>
+          </h2>
+          <p className="text-gray-400 text-lg">
+            A lean TypeScript stack tuned for runtime speed and developer speed
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
+          {technologies.map((tech) => (
+            <TechCard
+              description={tech.description}
+              href={tech.href}
+              key={tech.name}
+              logo={tech.logo}
+              name={tech.name}
+            />
+          ))}
+        </div>
       </div>
     </main>
   );
