@@ -46,9 +46,29 @@ export const TableOfContents: React.FC = () => {
     if (headingElements.length === 0) return;
 
     // Find the scrollable container
-    const scrollContainer = headingElements[0]?.closest(
-      ".overflow-y-auto",
-    ) as HTMLElement | null;
+    const scrollContainer = headingElements[0]?.closest(".overflow-y-auto");
+
+    if (!scrollContainer) return;
+
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+    const checkActiveHeading = () => {
+      if (manualScrollRef.current !== null) {
+        return;
+      }
+
+      // Only handle the "at top" case - let IntersectionObserver handle the rest
+      if (scrollContainer.scrollTop < 100) {
+        setActiveId(headings[0]?.id ?? "");
+      }
+    };
+
+    const throttledCheckActiveHeading = () => {
+      if (scrollTimeout) return;
+      scrollTimeout = setTimeout(() => {
+        checkActiveHeading();
+        scrollTimeout = null;
+      }, 100);
+    };
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -57,6 +77,12 @@ export const TableOfContents: React.FC = () => {
         if (manualScrollRef.current !== null) {
           return;
         }
+
+        // Skip if we're at the top (let scroll handler deal with it)
+        if (scrollContainer.scrollTop < 100) {
+          return;
+        }
+
         // Pick the most visible intersecting heading (highest intersectionRatio)
         let best: IntersectionObserverEntry | null = null;
         for (const entry of entries) {
@@ -83,10 +109,24 @@ export const TableOfContents: React.FC = () => {
       observer.observe(element);
     });
 
+    // Check on scroll to handle top case (throttled)
+    scrollContainer.addEventListener("scroll", throttledCheckActiveHeading, {
+      passive: true,
+    });
+    // Initial check
+    checkActiveHeading();
+
     return () => {
       headingElements.forEach((element) => {
         observer.unobserve(element);
       });
+      scrollContainer.removeEventListener(
+        "scroll",
+        throttledCheckActiveHeading,
+      );
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
     };
   }, [headings]);
 
@@ -102,9 +142,7 @@ export const TableOfContents: React.FC = () => {
       manualScrollRef.current = id;
 
       // Find the scrollable container (the content area)
-      const scrollContainer = element.closest(
-        ".overflow-y-auto",
-      ) as HTMLElement | null;
+      const scrollContainer = element.closest(".overflow-y-auto");
       if (scrollContainer) {
         // Get the current scroll position
         const currentScrollTop = scrollContainer.scrollTop;
