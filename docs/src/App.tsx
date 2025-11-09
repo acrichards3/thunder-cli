@@ -1,9 +1,9 @@
 import React from "react";
 import { FiChevronRight } from "react-icons/fi";
 import { Link } from "@tanstack/react-router";
-import { Navbar } from "./components/Navbar";
-import { TechCard } from "./components/TechCard";
-import type { TechCardProps } from "./components/TechCard";
+import { Navbar } from "./components/navbar/Navbar";
+import { TechCard } from "./components/techCard/TechCard";
+import type { TechCardProps } from "./components/techCard/TechCard";
 
 const technologies = [
   {

@@ -1,7 +1,7 @@
 import React from "react";
-import { DocsContainer } from "../../../components/DocsContainer";
-import { Markdown } from "../../../components/Markdown";
 import typescriptContent from "./typescript.md?raw";
+import { DocsContainer } from "../../../components/docsContainer/DocsContainer";
+import { Markdown } from "../../../components/markdown/Markdown";
 
 export const TypeScript: React.FC = () => {
   return (

@@ -1,7 +1,7 @@
-import React from "react";
-import { DocsContainer } from "../../../components/DocsContainer";
-import { Markdown } from "../../../components/Markdown";
 import drizzleContent from "./drizzle.md?raw";
+import React from "react";
+import { DocsContainer } from "../../../components/docsContainer/DocsContainer";
+import { Markdown } from "../../../components/markdown/Markdown";
 
 export const Drizzle: React.FC = () => {
   return (

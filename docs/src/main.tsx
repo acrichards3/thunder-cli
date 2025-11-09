@@ -1,20 +1,20 @@
 import "./index.css";
 import React from "react";
 import { App } from "./App";
+import { AuthJs } from "./pages/docs/authjs/AuthJs";
+import { Bun } from "./pages/docs/bun/Bun";
 import { createRoot } from "react-dom/client";
 import { createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router"; // prettier-ignore
-import { Introduction } from "./pages/docs/introduction/Introduction";
+import { Deployment } from "./pages/docs/deployment/Deployment";
+import { Drizzle } from "./pages/docs/drizzle/Drizzle";
+import { FirstSteps } from "./pages/docs/first-steps/FirstSteps";
 import { GettingStarted } from "./pages/docs/getting-started/GettingStarted";
+import { Introduction } from "./pages/docs/introduction/Introduction";
+import { NotFound } from "./pages/NotFound";
 import { ProjectStructure } from "./pages/docs/project-structure/ProjectStructure";
 import { Recommendations } from "./pages/docs/recommendations/Recommendations";
-import { FirstSteps } from "./pages/docs/first-steps/FirstSteps";
 import { TypeScript } from "./pages/docs/typescript/TypeScript";
 import { Vite } from "./pages/docs/vite/Vite";
-import { Bun } from "./pages/docs/bun/Bun";
-import { Drizzle } from "./pages/docs/drizzle/Drizzle";
-import { AuthJs } from "./pages/docs/authjs/AuthJs";
-import { Deployment } from "./pages/docs/deployment/Deployment";
-import { NotFound } from "./pages/NotFound";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element #root not found");

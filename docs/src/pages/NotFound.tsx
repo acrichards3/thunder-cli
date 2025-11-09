@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import { Navbar } from "../components/Navbar";
+import { Navbar } from "../components/navbar/Navbar";
 
 export const NotFound: React.FC = () => {
   return (

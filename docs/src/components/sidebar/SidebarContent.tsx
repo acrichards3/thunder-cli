@@ -10,7 +10,7 @@ interface SidebarItem {
   sectionTitle: string;
 }
 
-const SIDEBAR_ITEMS = {
+export const SIDEBAR_ITEMS = {
   deployment: {
     items: [
       {
@@ -75,7 +75,25 @@ const SIDEBAR_ITEMS = {
   },
 } as const satisfies Record<string, SidebarItem>;
 
-export const Sidebar: React.FC = () => {
+export const getAllNavigationItems = (): Array<{
+  href: string;
+  title: string;
+}> => {
+  const sortedSections = Object.values(SIDEBAR_ITEMS).sort(
+    (a, b) => a.order - b.order,
+  );
+  return sortedSections.flatMap((section) =>
+    section.items.map((item) => ({ href: item.href, title: item.title })),
+  );
+};
+
+interface SidebarContentProps {
+  onLinkClick?: () => void;
+}
+
+export const SidebarContent: React.FC<SidebarContentProps> = ({
+  onLinkClick,
+}) => {
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -84,7 +102,7 @@ export const Sidebar: React.FC = () => {
   );
 
   return (
-    <aside className="flex flex-col gap-8 w-64 py-8 px-4">
+    <>
       {sortedSections.map((section) => (
         <div className="flex flex-col gap-2" key={section.sectionTitle}>
           <h3 className="mb-2 text-base font-semibold uppercase tracking-wide text-white">
@@ -101,6 +119,7 @@ export const Sidebar: React.FC = () => {
                       : "text-gray-300 hover:bg-white/5 hover:text-white"
                   }`}
                   key={item.href}
+                  onClick={onLinkClick}
                   to={item.href}
                 >
                   {isActive && (
@@ -113,6 +132,6 @@ export const Sidebar: React.FC = () => {
           </nav>
         </div>
       ))}
-    </aside>
+    </>
   );
 };

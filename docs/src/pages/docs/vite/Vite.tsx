@@ -1,7 +1,7 @@
 import React from "react";
-import { DocsContainer } from "../../../components/DocsContainer";
-import { Markdown } from "../../../components/Markdown";
 import viteContent from "./vite.md?raw";
+import { DocsContainer } from "../../../components/docsContainer/DocsContainer";
+import { Markdown } from "../../../components/markdown/Markdown";
 
 export const Vite: React.FC = () => {
   return (

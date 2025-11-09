@@ -1,7 +1,7 @@
 import React from "react";
-import { DocsContainer } from "../../../components/DocsContainer";
-import { Markdown } from "../../../components/Markdown";
 import recommendationsContent from "./recommendations.md?raw";
+import { DocsContainer } from "../../../components/docsContainer/DocsContainer";
+import { Markdown } from "../../../components/markdown/Markdown";
 
 export const Recommendations: React.FC = () => {
   return (
