@@ -1,6 +1,7 @@
-import { useState } from "react";
+import React from "react";
 import { FiChevronRight } from "react-icons/fi";
-import { FaGithub, FaXTwitter } from "react-icons/fa6";
+import { Link } from "@tanstack/react-router";
+import { Navbar } from "./components/Navbar";
 import { TechCard } from "./components/TechCard";
 import type { TechCardProps } from "./components/TechCard";
 
@@ -71,7 +72,7 @@ const technologies = [
 ] as const satisfies TechCardProps[];
 
 export function App() {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = React.useState(false);
   const command = "bun create thunder-app@latest";
 
   const handleCopy = async () => {
@@ -84,26 +85,7 @@ export function App() {
 
   return (
     <main className="relative flex flex-1 flex-col items-center gap-32 justify-start px-4 py-12">
-      <div className="fixed top-8 right-8 flex items-center gap-4 text-white/80">
-        <a
-          aria-label="Open GitHub repository"
-          className="hover:text-white transition-colors duration-200"
-          href="https://github.com/acrichards3/thunder-cli"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <FaGithub className="h-10 w-10 drop-shadow" />
-        </a>
-        <a
-          aria-label="Open X profile"
-          className="hover:text-white transition-colors duration-200"
-          href="https://x.com/Acricha3"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <FaXTwitter className="h-10 w-10 drop-shadow" />
-        </a>
-      </div>
+      <Navbar hideLogo />
       <div className="flex flex-col items-center gap-6">
         <img
           alt="Thunder App Logo"
@@ -114,23 +96,25 @@ export function App() {
           Build <span className="text-cyan-400">lightning fast</span> full-stack
           TypeScript apps with Bun
         </h1>
-        <a
+        <Link
           aria-label="View documentation"
           className="group inline-flex items-center gap-2 text-cyan-300 hover:text-cyan-200 text-base sm:text-lg font-semibold tracking-wide transition-colors duration-200"
-          href="https://www.npmjs.com/package/create-thunder-app"
-          rel="noopener noreferrer"
-          target="_blank"
+          to="/introduction"
         >
           View documentation
           <FiChevronRight
             aria-hidden="true"
             className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5"
           />
-        </a>
+        </Link>
         <div className="flex items-center gap-3 bg-white/5 border border-cyan-500/20 rounded-lg px-4 py-3 max-w-2xl w-full group hover:border-cyan-400/40 transition-colors duration-200">
           <code className="text-white text-lg font-mono flex-1">{command}</code>
           <button
-            className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 rounded text-cyan-300 text-sm font-semibold transition-colors duration-200 cursor-pointer shrink-0"
+            className={`px-4 py-2 rounded text-sm font-semibold transition-colors duration-200 cursor-pointer shrink-0 ${
+              copied
+                ? "bg-green-500/30 hover:bg-green-500/40 border border-green-400 text-green-200"
+                : "bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300"
+            }`}
             onClick={handleCopy}
             type="button"
           >
@@ -144,7 +128,8 @@ export function App() {
             Build fast. <span className="text-cyan-400">Run faster.</span>
           </h2>
           <p className="text-gray-400 text-lg">
-            A lean TypeScript stack tuned for runtime speed and developer speed
+            A lean TypeScript stack tuned for runtime speed and developer
+            experience
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
