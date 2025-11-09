@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FiChevronRight } from "react-icons/fi";
+import { FaGithub, FaXTwitter } from "react-icons/fa6";
 import { TechCard } from "./components/TechCard";
 import type { TechCardProps } from "./components/TechCard";
 
@@ -82,7 +83,27 @@ export function App() {
   };
 
   return (
-    <main className="flex flex-1 flex-col items-center gap-32 justify-start px-4 py-12">
+    <main className="relative flex flex-1 flex-col items-center gap-32 justify-start px-4 py-12">
+      <div className="fixed top-8 right-8 flex items-center gap-4 text-white/80">
+        <a
+          aria-label="Open GitHub repository"
+          className="hover:text-white transition-colors duration-200"
+          href="https://github.com/acrichards3/thunder-cli"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <FaGithub className="h-10 w-10 drop-shadow" />
+        </a>
+        <a
+          aria-label="Open X profile"
+          className="hover:text-white transition-colors duration-200"
+          href="https://x.com/Acricha3"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <FaXTwitter className="h-10 w-10 drop-shadow" />
+        </a>
+      </div>
       <div className="flex flex-col items-center gap-6">
         <img
           alt="Thunder App Logo"
