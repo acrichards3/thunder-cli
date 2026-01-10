@@ -64,7 +64,7 @@ async function main(): Promise<void> {
      **                               ██╔══██║██╔═══╝ ██╔═══╝ 
                                       ██║  ██║██║     ██║     
                                       ╚═╝  ╚═╝╚═╝     ╚═╝     
-`)
+`),
   );
 
   const cwd = process.cwd();
@@ -87,8 +87,8 @@ async function main(): Promise<void> {
     if (contents.length > 0) {
       console.error(
         chalk.red.bold(
-          `Error: directory "${projectName}" already exists and is not empty.`
-        )
+          `Error: directory "${projectName}" already exists and is not empty.`,
+        ),
       );
       process.exit(1);
     }
@@ -142,7 +142,7 @@ async function main(): Promise<void> {
 
   if (!(await pkgFile.exists())) {
     console.error(
-      chalk.red.bold("Error: package.json not found in target directory")
+      chalk.red.bold("Error: package.json not found in target directory"),
     );
     process.exit(1);
   }
@@ -178,7 +178,7 @@ async function main(): Promise<void> {
     ) {
       wsPkg.name = wsPkg.name.replace(
         /@ak-wedding\/|@thunder-app\//,
-        newPrefix
+        newPrefix,
       );
     }
     if (wsPkg.dependencies) {
@@ -226,11 +226,11 @@ async function main(): Promise<void> {
   // Optional installs
   const doInstall = await askYesNo(
     "Run bun install for all workspaces now?",
-    true
+    true,
   );
   if (doInstall) {
     console.log(
-      chalk.blue.bold("\n› Installing dependencies (root workspace)...\n")
+      chalk.blue.bold("\n› Installing dependencies (root workspace)...\n"),
     );
     const res = Bun.spawnSync(["bun", "install"], {
       cwd: targetDir,
@@ -238,7 +238,7 @@ async function main(): Promise<void> {
     });
     if (res.exitCode !== 0) {
       console.error(
-        chalk.red("bun install failed. You can run it manually later.")
+        chalk.red("bun install failed. You can run it manually later."),
       );
     } else {
       console.log(chalk.blue.bold("\n› Building lib...\n"));
@@ -248,7 +248,7 @@ async function main(): Promise<void> {
       });
       if (buildRes.exitCode !== 0) {
         console.error(
-          chalk.red("lib build failed. You can run 'bun run build:lib' later.")
+          chalk.red("lib build failed. You can run 'bun run build:lib' later."),
         );
       }
     }
@@ -264,8 +264,8 @@ async function main(): Promise<void> {
   console.log(chalk.white(`  1. cd ${projectName}`));
   console.log(
     chalk.white(
-      "  2. bun install    # installs all workspaces (frontend, lib, backend)"
-    )
+      "  2. bun install    # installs all workspaces (frontend, lib, backend)",
+    ),
   );
   console.log(chalk.white("  3. bun run build:lib"));
   console.log(chalk.white("  4. bun run dev"));
