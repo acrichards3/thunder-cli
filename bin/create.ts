@@ -1,45 +1,53 @@
-#!/usr/bin/env node
-
-import {
-  existsSync,
-  readFileSync,
-  writeFileSync,
-  copyFileSync,
-  mkdirSync,
-  readdirSync,
-} from "fs";
-import { resolve, dirname, join, basename } from "path";
-import { fileURLToPath } from "url";
-import { spawnSync } from "child_process";
-import readline from "readline";
+#!/usr/bin/env bun
+import { readdirSync, mkdirSync, type Dirent } from "fs";
+import { join, resolve } from "path";
+import { createInterface } from "readline";
 import chalk from "chalk";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Template source is the package root (parent of bin/)
-const templateRoot = resolve(__dirname, "..");
+// Bun native: import.meta.dir replaces __dirname
+const templateRoot = resolve(import.meta.dir, "..");
 
 // Determine project name: argv[2] or prompt
-const argName = (process.argv[2] || "").trim();
+const argName = (Bun.argv[2] || "").trim();
 
-async function promptName(defaultName) {
-  return await new Promise((resolveName) => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-    rl.question(chalk.cyan(`Project name (${defaultName}): `), (answer) => {
-      rl.close();
-      const n = (answer || defaultName)
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, "-");
-      resolveName(n || defaultName);
-    });
+interface PackageJson {
+  name?: string;
+  private?: boolean;
+  postinstall?: string;
+  bin?: Record<string, string>;
+  files?: string[];
+  scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  [key: string]: unknown;
+}
+
+// Single readline interface for all prompts
+const rl = createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+function prompt(message: string): Promise<string> {
+  return new Promise((resolve) => {
+    rl.question(message, (answer) => resolve(answer));
   });
 }
 
-async function main() {
+async function promptName(defaultName: string): Promise<string> {
+  const answer = await prompt(chalk.cyan(`Project name (${defaultName}): `));
+  const n = (answer || defaultName).toLowerCase().replace(/[^a-z0-9-]/g, "-");
+  return n || defaultName;
+}
+
+async function askYesNo(question: string, defaultYes = true): Promise<boolean> {
+  const suffix = defaultYes ? "(Y/n)" : "(y/N)";
+  const answer = await prompt(chalk.cyan(`${question} ${suffix} `));
+  const a = (answer || "").trim().toLowerCase();
+  if (!a) return defaultYes;
+  return a === "y" || a === "yes";
+}
+
+async function main(): Promise<void> {
   console.log();
   console.log(
     chalk.cyan(`
@@ -56,7 +64,7 @@ async function main() {
      **                               ██╔══██║██╔═══╝ ██╔═══╝ 
                                       ██║  ██║██║     ██║     
                                       ╚═╝  ╚═╝╚═╝     ╚═╝     
-`),
+`)
   );
 
   const cwd = process.cwd();
@@ -69,32 +77,18 @@ async function main() {
     projectName.toLowerCase().replace(/[^a-z0-9-]/g, "-") || defaultName;
 
   // Ask about GitHub CI/CD pipeline
-  const askYesNo = async (question, defaultYes = true) => {
-    return await new Promise((resolveAns) => {
-      const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-      });
-      const suffix = defaultYes ? "(Y/n)" : "(y/N)";
-      rl.question(chalk.cyan(`${question} ${suffix} `), (answer) => {
-        rl.close();
-        const a = (answer || "").trim().toLowerCase();
-        if (!a) return resolveAns(defaultYes);
-        resolveAns(a === "y" || a === "yes");
-      });
-    });
-  };
-
   const includeGithub = await askYesNo("Include GitHub CI/CD pipeline?", true);
 
   const targetDir = resolve(cwd, projectName);
-  if (existsSync(targetDir)) {
+  const targetDirExists = await Bun.file(targetDir).exists();
+
+  if (targetDirExists) {
     const contents = readdirSync(targetDir);
     if (contents.length > 0) {
       console.error(
         chalk.red.bold(
-          `Error: directory "${projectName}" already exists and is not empty.`,
-        ),
+          `Error: directory "${projectName}" already exists and is not empty.`
+        )
       );
       process.exit(1);
     }
@@ -117,43 +111,43 @@ async function main() {
   if (!includeGithub) {
     ignore.add(".github");
   }
-  const shouldIgnore = (name) => ignore.has(name);
+  const shouldIgnore = (name: string): boolean => ignore.has(name);
 
-  const copyRecursive = (src, dest) => {
-    const entries = readdirSync(src, { withFileTypes: true });
+  const copyRecursive = async (src: string, dest: string): Promise<void> => {
+    const entries: Dirent[] = readdirSync(src, { withFileTypes: true });
     for (const entry of entries) {
       if (shouldIgnore(entry.name)) continue;
       const srcPath = join(src, entry.name);
       const destPath = join(dest, entry.name);
       if (entry.isDirectory()) {
-        if (!existsSync(destPath)) mkdirSync(destPath, { recursive: true });
-        copyRecursive(srcPath, destPath);
+        const destExists = await Bun.file(destPath).exists();
+        if (!destExists) mkdirSync(destPath, { recursive: true });
+        await copyRecursive(srcPath, destPath);
       } else {
         // Skip .env files but allow .env.example files
-        if (entry.name === ".env") {
-          continue;
-        }
+        if (entry.name === ".env") continue;
         // Skip .tsbuildinfo files
-        if (entry.name.endsWith(".tsbuildinfo")) {
-          continue;
-        }
-        copyFileSync(srcPath, destPath);
+        if (entry.name.endsWith(".tsbuildinfo")) continue;
+        // Bun native file copy
+        await Bun.write(destPath, Bun.file(srcPath));
       }
     }
   };
 
-  copyRecursive(templateRoot, targetDir);
+  await copyRecursive(templateRoot, targetDir);
 
   // Update package names and scripts in the copied project
   const pkgPath = resolve(targetDir, "package.json");
-  if (!existsSync(pkgPath)) {
+  const pkgFile = Bun.file(pkgPath);
+
+  if (!(await pkgFile.exists())) {
     console.error(
-      chalk.red.bold("Error: package.json not found in target directory"),
+      chalk.red.bold("Error: package.json not found in target directory")
     );
     process.exit(1);
   }
 
-  const rootPkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+  const rootPkg: PackageJson = await pkgFile.json();
   rootPkg.name = projectName;
   rootPkg.private = true;
   delete rootPkg.postinstall;
@@ -161,28 +155,30 @@ async function main() {
   delete rootPkg.files;
 
   const newPrefix = `@${projectName}/`;
-  const replacePrefixes = (s) =>
+  const replacePrefixes = (s: unknown): unknown =>
     typeof s === "string"
       ? s.replace(/@ak-wedding\/|@thunder-app\//g, newPrefix)
       : s;
   if (rootPkg.scripts) {
     for (const k of Object.keys(rootPkg.scripts)) {
-      rootPkg.scripts[k] = replacePrefixes(rootPkg.scripts[k]);
+      rootPkg.scripts[k] = replacePrefixes(rootPkg.scripts[k]) as string;
     }
   }
-  writeFileSync(pkgPath, JSON.stringify(rootPkg, null, 2) + "\n");
+  await Bun.write(pkgPath, JSON.stringify(rootPkg, null, 2) + "\n");
 
-  const updateWorkspace = (wsName) => {
+  const updateWorkspace = async (wsName: string): Promise<void> => {
     const wsPkgPath = resolve(targetDir, wsName, "package.json");
-    if (!existsSync(wsPkgPath)) return;
-    const wsPkg = JSON.parse(readFileSync(wsPkgPath, "utf-8"));
+    const wsPkgFile = Bun.file(wsPkgPath);
+    if (!(await wsPkgFile.exists())) return;
+
+    const wsPkg: PackageJson = await wsPkgFile.json();
     if (
       wsPkg.name?.startsWith("@ak-wedding/") ||
       wsPkg.name?.startsWith("@thunder-app/")
     ) {
       wsPkg.name = wsPkg.name.replace(
         /@ak-wedding\/|@thunder-app\//,
-        newPrefix,
+        newPrefix
       );
     }
     if (wsPkg.dependencies) {
@@ -194,65 +190,65 @@ async function main() {
         }
       }
     }
-    writeFileSync(wsPkgPath, JSON.stringify(wsPkg, null, 2) + "\n");
+    await Bun.write(wsPkgPath, JSON.stringify(wsPkg, null, 2) + "\n");
   };
 
-  updateWorkspace("frontend");
-  updateWorkspace("backend");
-  updateWorkspace("lib");
+  await updateWorkspace("frontend");
+  await updateWorkspace("backend");
+  await updateWorkspace("lib");
 
   // Replace import specifiers inside source files to use the new scope
-  const replaceInSource = (dir) => {
-    const entries = readdirSync(dir, { withFileTypes: true });
+  const replaceInSource = async (dir: string): Promise<void> => {
+    const entries: Dirent[] = readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = join(dir, entry.name);
       if (entry.isDirectory()) {
         // skip node_modules and dist
         if (entry.name === "node_modules" || entry.name === "dist") continue;
-        replaceInSource(fullPath);
+        await replaceInSource(fullPath);
       } else {
         if (!/(\.ts|\.tsx|\.js|\.mjs|\.cjs)$/.test(entry.name)) continue;
-        const content = readFileSync(fullPath, "utf-8");
+        const content = await Bun.file(fullPath).text();
         const replaced = content
           // preserve the original quote (single or double)
           .replace(/(["'])@ak-wedding\//g, `$1${newPrefix}`)
           .replace(/(["'])@thunder-app\//g, `$1${newPrefix}`);
         if (replaced !== content) {
-          writeFileSync(fullPath, replaced);
+          await Bun.write(fullPath, replaced);
         }
       }
     }
   };
 
-  replaceInSource(resolve(targetDir, "backend"));
-  replaceInSource(resolve(targetDir, "frontend"));
+  await replaceInSource(resolve(targetDir, "backend"));
+  await replaceInSource(resolve(targetDir, "frontend"));
 
   // Optional installs
   const doInstall = await askYesNo(
     "Run bun install for all workspaces now?",
-    true,
+    true
   );
   if (doInstall) {
     console.log(
-      chalk.blue.bold("\n› Installing dependencies (root workspace)...\n"),
+      chalk.blue.bold("\n› Installing dependencies (root workspace)...\n")
     );
-    const res = spawnSync("bun", ["install"], {
+    const res = Bun.spawnSync(["bun", "install"], {
       cwd: targetDir,
-      stdio: "inherit",
+      stdio: ["inherit", "inherit", "inherit"],
     });
-    if (res.status !== 0) {
+    if (res.exitCode !== 0) {
       console.error(
-        chalk.red("bun install failed. You can run it manually later."),
+        chalk.red("bun install failed. You can run it manually later.")
       );
     } else {
       console.log(chalk.blue.bold("\n› Building lib...\n"));
-      const buildRes = spawnSync("bun", ["run", "build:lib"], {
+      const buildRes = Bun.spawnSync(["bun", "run", "build:lib"], {
         cwd: targetDir,
-        stdio: "inherit",
+        stdio: ["inherit", "inherit", "inherit"],
       });
-      if (buildRes.status !== 0) {
+      if (buildRes.exitCode !== 0) {
         console.error(
-          chalk.red("lib build failed. You can run 'bun run build:lib' later."),
+          chalk.red("lib build failed. You can run 'bun run build:lib' later.")
         );
       }
     }
@@ -268,15 +264,18 @@ async function main() {
   console.log(chalk.white(`  1. cd ${projectName}`));
   console.log(
     chalk.white(
-      "  2. bun install    # installs all workspaces (frontend, lib, backend)",
-    ),
+      "  2. bun install    # installs all workspaces (frontend, lib, backend)"
+    )
   );
   console.log(chalk.white("  3. bun run build:lib"));
   console.log(chalk.white("  4. bun run dev"));
   console.log();
+
+  rl.close();
 }
 
-main().catch((err) => {
+main().catch((err: Error) => {
+  rl.close();
   console.error(chalk.red.bold("Error:"), chalk.red(err));
   process.exit(1);
 });
