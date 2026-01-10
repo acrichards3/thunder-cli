@@ -14,7 +14,7 @@
     "typescript"
   ],
   "bin": {
-    "create-thunder-app": "bin/create.ts"
+    "create-thunder-app": "bin/index.ts"
   },
   "files": [
     "bin",
