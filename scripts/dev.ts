@@ -1,13 +1,16 @@
-#!/usr/bin/env node
-
-import { spawn } from "child_process";
+#!/usr/bin/env bun
+import { resolve } from "path";
 import chalk from "chalk";
-import { fileURLToPath } from "url";
-import { dirname, resolve } from "path";
+import type { Subprocess } from "bun";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const rootDir = resolve(__dirname, "..");
+const rootDir = resolve(import.meta.dir, "..");
+
+interface ServiceConfig {
+  emoji: string;
+  color: typeof chalk.cyan;
+  name: string;
+  port: string | null;
+}
 
 // Colors and labels for each service
 const services = {
@@ -29,10 +32,14 @@ const services = {
     name: "Backend",
     port: "3000",
   },
-};
+} as const satisfies Record<string, ServiceConfig>;
 
 // Spawn a process and prefix its output
-function spawnWithLabel(service, command, args, cwd) {
+function spawnWithLabel(
+  service: string,
+  command: string[],
+  cwd: string,
+): Subprocess {
   const config = services[service];
   const label = `${config.color.bold(`[${config.emoji} ${config.name}]`)}`;
 
@@ -40,37 +47,64 @@ function spawnWithLabel(service, command, args, cwd) {
     `${label} ${chalk.gray(`Starting ${config.name.toLowerCase()}...`)}`,
   );
 
-  const proc = spawn(command, args, {
+  const proc = Bun.spawn(command, {
     cwd,
-    stdio: ["inherit", "pipe", "pipe"],
-    shell: true,
+    stdin: "inherit",
+    stdout: "pipe",
+    stderr: "pipe",
   });
 
   // Prefix stdout
-  proc.stdout.on("data", (data) => {
-    const lines = data.toString().split("\n");
-    lines.forEach((line) => {
-      if (line.trim()) {
-        console.log(`${label} ${line}`);
+  (async () => {
+    const reader = proc.stdout.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.trim()) {
+          console.log(`${label} ${line}`);
+        }
       }
-    });
-  });
+    }
+
+    if (buffer.trim()) {
+      console.log(`${label} ${buffer}`);
+    }
+  })();
 
   // Prefix stderr
-  proc.stderr.on("data", (data) => {
-    const lines = data.toString().split("\n");
-    lines.forEach((line) => {
-      if (line.trim()) {
-        console.log(`${label} ${chalk.red(line)}`);
-      }
-    });
-  });
+  (async () => {
+    const reader = proc.stderr.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
 
-  proc.on("exit", (code) => {
-    if (code !== 0 && code !== null) {
-      console.log(`${label} ${chalk.red(`Process exited with code ${code}`)}`);
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.trim()) {
+          console.log(`${label} ${chalk.red(line)}`);
+        }
+      }
     }
-  });
+
+    if (buffer.trim()) {
+      console.log(`${label} ${chalk.red(buffer)}`);
+    }
+  })();
 
   return proc;
 }
@@ -85,24 +119,21 @@ console.log();
 // Start lib (TypeScript watch)
 const libProc = spawnWithLabel(
   "lib",
-  "bun",
-  ["run", "dev"],
+  ["bun", "run", "dev"],
   resolve(rootDir, "lib"),
 );
 
 // Start backend
 const backendProc = spawnWithLabel(
   "backend",
-  "bun",
-  ["run", "dev"],
+  ["bun", "run", "dev"],
   resolve(rootDir, "backend"),
 );
 
 // Start frontend
 const frontendProc = spawnWithLabel(
   "frontend",
-  "bun",
-  ["run", "dev"],
+  ["bun", "run", "dev"],
   resolve(rootDir, "frontend"),
 );
 

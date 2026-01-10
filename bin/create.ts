@@ -103,6 +103,7 @@ async function main(): Promise<void> {
     ".DS_Store",
     "bin",
     "dist",
+    "docs",
     ".vite",
     ".cache",
     "coverage",
@@ -156,9 +157,7 @@ async function main(): Promise<void> {
 
   const newPrefix = `@${projectName}/`;
   const replacePrefixes = (s: unknown): unknown =>
-    typeof s === "string"
-      ? s.replace(/@ak-wedding\/|@thunder-app\//g, newPrefix)
-      : s;
+    typeof s === "string" ? s.replace(/@thunder-app\//g, newPrefix) : s;
   if (rootPkg.scripts) {
     for (const k of Object.keys(rootPkg.scripts)) {
       rootPkg.scripts[k] = replacePrefixes(rootPkg.scripts[k]) as string;
@@ -172,19 +171,13 @@ async function main(): Promise<void> {
     if (!(await wsPkgFile.exists())) return;
 
     const wsPkg: PackageJson = await wsPkgFile.json();
-    if (
-      wsPkg.name?.startsWith("@ak-wedding/") ||
-      wsPkg.name?.startsWith("@thunder-app/")
-    ) {
-      wsPkg.name = wsPkg.name.replace(
-        /@ak-wedding\/|@thunder-app\//,
-        newPrefix,
-      );
+    if (wsPkg.name?.startsWith("@thunder-app/")) {
+      wsPkg.name = wsPkg.name.replace(/@thunder-app\//, newPrefix);
     }
     if (wsPkg.dependencies) {
       for (const dep of Object.keys(wsPkg.dependencies)) {
-        if (dep.startsWith("@ak-wedding/") || dep.startsWith("@thunder-app/")) {
-          const newDep = dep.replace(/@ak-wedding\/|@thunder-app\//, newPrefix);
+        if (dep.startsWith("@thunder-app/")) {
+          const newDep = dep.replace(/@thunder-app\//, newPrefix);
           wsPkg.dependencies[newDep] = wsPkg.dependencies[dep];
           delete wsPkg.dependencies[dep];
         }
@@ -209,10 +202,10 @@ async function main(): Promise<void> {
       } else {
         if (!/(\.ts|\.tsx|\.js|\.mjs|\.cjs)$/.test(entry.name)) continue;
         const content = await Bun.file(fullPath).text();
-        const replaced = content
-          // preserve the original quote (single or double)
-          .replace(/(["'])@ak-wedding\//g, `$1${newPrefix}`)
-          .replace(/(["'])@thunder-app\//g, `$1${newPrefix}`);
+        const replaced = content.replace(
+          /(["'])@thunder-app\//g,
+          `$1${newPrefix}`,
+        );
         if (replaced !== content) {
           await Bun.write(fullPath, replaced);
         }
