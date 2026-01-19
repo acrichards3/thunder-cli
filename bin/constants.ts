@@ -1,6 +1,14 @@
-import chalk from "chalk";
+// ANSI color codes (no external dependency needed)
+const cyan = (s: string) => `\x1b[36m${s}\x1b[0m`;
+const green = (s: string) => `\x1b[32m${s}\x1b[0m`;
+const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
+const red = (s: string) => `\x1b[31m${s}\x1b[0m`;
+const gray = (s: string) => `\x1b[90m${s}\x1b[0m`;
+const bold = (s: string) => `\x1b[1m${s}\x1b[0m`;
 
-export const BANNER = chalk.cyan(`
+export const colors = { cyan, green, yellow, red, gray, bold };
+
+export const BANNER = cyan(`
              ===    ████████╗██╗  ██╗██╗   ██╗███╗   ██╗██████╗ ███████╗██████╗ 
            ====     ╚══██╔══╝██║  ██║██║   ██║████╗  ██║██╔══██╗██╔════╝██╔══██╗
          =====         ██║   ███████║██║   ██║██╔██╗ ██║██║  ██║█████╗  ██████╔╝

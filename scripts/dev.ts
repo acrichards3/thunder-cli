@@ -1,13 +1,22 @@
 #!/usr/bin/env bun
 import { resolve } from "path";
-import chalk from "chalk";
 import type { Subprocess } from "bun";
+
+const colors = {
+  cyan: (s: string) => `\x1b[36m${s}\x1b[0m`,
+  yellow: (s: string) => `\x1b[33m${s}\x1b[0m`,
+  green: (s: string) => `\x1b[32m${s}\x1b[0m`,
+  red: (s: string) => `\x1b[31m${s}\x1b[0m`,
+  blue: (s: string) => `\x1b[34m${s}\x1b[0m`,
+  gray: (s: string) => `\x1b[90m${s}\x1b[0m`,
+  bold: (s: string) => `\x1b[1m${s}\x1b[0m`,
+} as const;
 
 const rootDir = resolve(import.meta.dir, "..");
 
 interface ServiceConfig {
   emoji: string;
-  color: typeof chalk.cyan;
+  color: (s: string) => string;
   name: string;
   port: string | null;
 }
@@ -16,19 +25,19 @@ interface ServiceConfig {
 const services = {
   frontend: {
     emoji: "⚛️",
-    color: chalk.cyan,
+    color: colors.cyan,
     name: "Frontend",
     port: "5173",
   },
   lib: {
     emoji: "📦",
-    color: chalk.yellow,
+    color: colors.yellow,
     name: "Lib",
     port: null,
   },
   backend: {
     emoji: "🚀",
-    color: chalk.green,
+    color: colors.green,
     name: "Backend",
     port: "3000",
   },
@@ -41,10 +50,10 @@ function spawnWithLabel(
   cwd: string,
 ): Subprocess {
   const config = services[service];
-  const label = `${config.color.bold(`[${config.emoji} ${config.name}]`)}`;
+  const label = colors.bold(config.color(`[${config.emoji} ${config.name}]`));
 
   console.log(
-    `${label} ${chalk.gray(`Starting ${config.name.toLowerCase()}...`)}`,
+    `${label} ${colors.gray(`Starting ${config.name.toLowerCase()}...`)}`,
   );
 
   const proc = Bun.spawn(command, {
@@ -96,13 +105,13 @@ function spawnWithLabel(
 
       for (const line of lines) {
         if (line.trim()) {
-          console.log(`${label} ${chalk.red(line)}`);
+          console.log(`${label} ${colors.red(line)}`);
         }
       }
     }
 
     if (buffer.trim()) {
-      console.log(`${label} ${chalk.red(buffer)}`);
+      console.log(`${label} ${colors.red(buffer)}`);
     }
   })();
 
@@ -111,9 +120,9 @@ function spawnWithLabel(
 
 // Start all services
 console.log();
-console.log(chalk.bold.blue("╔════════════════════════════════════════╗"));
-console.log(chalk.bold.blue("║   Starting Development Servers         ║"));
-console.log(chalk.bold.blue("╚════════════════════════════════════════╝"));
+console.log(colors.bold(colors.blue("╔════════════════════════════════════════╗")));
+console.log(colors.bold(colors.blue("║   Starting Development Servers         ║")));
+console.log(colors.bold(colors.blue("╚════════════════════════════════════════╝")));
 console.log();
 
 // Start lib (TypeScript watch)
@@ -140,27 +149,27 @@ const frontendProc = spawnWithLabel(
 // Wait a moment for services to start, then show status
 setTimeout(() => {
   console.log();
-  console.log(chalk.bold.green("✓ All services started!"));
+  console.log(colors.bold(colors.green("✓ All services started!")));
   console.log();
-  console.log(chalk.bold("Services running:"));
+  console.log(colors.bold("Services running:"));
   console.log(
-    `  ${services.frontend.emoji} ${chalk.cyan.bold("Frontend")}  → http://localhost:${services.frontend.port}`,
+    `  ${services.frontend.emoji} ${colors.bold(colors.cyan("Frontend"))}  → http://localhost:${services.frontend.port}`,
   );
   console.log(
-    `  ${services.backend.emoji} ${chalk.green.bold("Backend")}  → http://localhost:${services.backend.port}`,
+    `  ${services.backend.emoji} ${colors.bold(colors.green("Backend"))}  → http://localhost:${services.backend.port}`,
   );
   console.log(
-    `  ${services.lib.emoji} ${chalk.yellow.bold("Lib")}      → Watching for changes`,
+    `  ${services.lib.emoji} ${colors.bold(colors.yellow("Lib"))}      → Watching for changes`,
   );
   console.log();
-  console.log(chalk.gray("Press Ctrl+C to stop all services"));
+  console.log(colors.gray("Press Ctrl+C to stop all services"));
   console.log();
 }, 2000);
 
 // Handle cleanup on exit
 process.on("SIGINT", () => {
   console.log();
-  console.log(chalk.yellow("Stopping all services..."));
+  console.log(colors.yellow("Stopping all services..."));
   libProc.kill();
   backendProc.kill();
   frontendProc.kill();

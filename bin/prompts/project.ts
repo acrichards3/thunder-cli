@@ -1,13 +1,12 @@
-import chalk from "chalk";
+import { colors, DEFAULT_PROJECT_NAME } from "../constants";
 import { prompt } from "./base";
-import { DEFAULT_PROJECT_NAME } from "../constants";
 
 export const promptProjectName = async (argName: string): Promise<string> => {
   let projectName = argName;
 
   if (!projectName) {
     const answer = await prompt(
-      chalk.cyan(`Project name (${DEFAULT_PROJECT_NAME}): `),
+      colors.cyan(`Project name (${DEFAULT_PROJECT_NAME}): `),
     );
     projectName = answer || DEFAULT_PROJECT_NAME;
   }

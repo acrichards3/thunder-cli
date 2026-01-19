@@ -1,6 +1,9 @@
-import chalk from "chalk";
+import { colors } from "../constants";
 import type { ProjectConfig } from "../types";
 import { askYesNo } from "../prompts";
+
+// Blue color helper (not in base colors)
+const blue = (s: string) => `\x1b[34m${s}\x1b[0m`;
 
 export const runInstall = async (config: ProjectConfig): Promise<void> => {
   const doInstall = await askYesNo(
@@ -11,7 +14,7 @@ export const runInstall = async (config: ProjectConfig): Promise<void> => {
   if (!doInstall) return;
 
   console.log(
-    chalk.blue.bold("\n› Installing dependencies (root workspace)...\n"),
+    colors.bold(blue("\n› Installing dependencies (root workspace)...\n")),
   );
 
   const installResult = Bun.spawnSync(["bun", "install"], {
@@ -21,12 +24,12 @@ export const runInstall = async (config: ProjectConfig): Promise<void> => {
 
   if (installResult.exitCode !== 0) {
     console.error(
-      chalk.red("bun install failed. You can run it manually later."),
+      colors.red("bun install failed. You can run it manually later."),
     );
     return;
   }
 
-  console.log(chalk.blue.bold("\n› Building lib...\n"));
+  console.log(colors.bold(blue("\n› Building lib...\n")));
 
   const buildResult = Bun.spawnSync(["bun", "run", "build:lib"], {
     cwd: config.targetDir,
@@ -35,7 +38,7 @@ export const runInstall = async (config: ProjectConfig): Promise<void> => {
 
   if (buildResult.exitCode !== 0) {
     console.error(
-      chalk.red("lib build failed. You can run 'bun run build:lib' later."),
+      colors.red("lib build failed. You can run 'bun run build:lib' later."),
     );
   }
 };

@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import { colors } from "../constants";
 import { prompt } from "./base";
 
 export const askYesNo = async (
@@ -6,7 +6,7 @@ export const askYesNo = async (
   defaultYes = true,
 ): Promise<boolean> => {
   const suffix = defaultYes ? "(Y/n)" : "(y/N)";
-  const answer = await prompt(chalk.cyan(`${question} ${suffix} `));
+  const answer = await prompt(colors.cyan(`${question} ${suffix} `));
   const a = (answer || "").trim().toLowerCase();
   if (!a) return defaultYes;
   return a === "y" || a === "yes";

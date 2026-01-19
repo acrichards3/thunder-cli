@@ -1,5 +1,5 @@
 import { resolve } from "path";
-import chalk from "chalk";
+import { colors } from "../constants";
 import type { ProjectConfig, PackageJson } from "../types";
 
 export const transformRootPackage = async (
@@ -10,7 +10,7 @@ export const transformRootPackage = async (
 
   if (!(await pkgFile.exists())) {
     console.error(
-      chalk.red.bold("Error: package.json not found in target directory"),
+      colors.red(colors.bold("Error: package.json not found in target directory")),
     );
     process.exit(1);
   }

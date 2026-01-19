@@ -1,6 +1,6 @@
 import { readdirSync, mkdirSync } from "fs";
 import { resolve } from "path";
-import chalk from "chalk";
+import { colors } from "../constants";
 import type { ProjectConfig } from "../types";
 import { copyRecursive } from "../utils/copy";
 
@@ -17,9 +17,9 @@ export const copyBaseTemplate = async (
     const contents = readdirSync(config.targetDir);
     if (contents.length > 0) {
       console.error(
-        chalk.red.bold(
+        colors.red(colors.bold(
           `Error: directory "${config.name}" already exists and is not empty.`,
-        ),
+        )),
       );
       process.exit(1);
     }
