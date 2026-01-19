@@ -17,9 +17,11 @@ export const copyBaseTemplate = async (
     const contents = readdirSync(config.targetDir);
     if (contents.length > 0) {
       console.error(
-        colors.red(colors.bold(
-          `Error: directory "${config.name}" already exists and is not empty.`,
-        )),
+        colors.red(
+          colors.bold(
+            `Error: directory "${config.name}" already exists and is not empty.`,
+          ),
+        ),
       );
       process.exit(1);
     }

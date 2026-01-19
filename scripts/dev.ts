@@ -120,9 +120,15 @@ function spawnWithLabel(
 
 // Start all services
 console.log();
-console.log(colors.bold(colors.blue("╔════════════════════════════════════════╗")));
-console.log(colors.bold(colors.blue("║   Starting Development Servers         ║")));
-console.log(colors.bold(colors.blue("╚════════════════════════════════════════╝")));
+console.log(
+  colors.bold(colors.blue("╔════════════════════════════════════════╗")),
+);
+console.log(
+  colors.bold(colors.blue("║   Starting Development Servers         ║")),
+);
+console.log(
+  colors.bold(colors.blue("╚════════════════════════════════════════╝")),
+);
 console.log();
 
 // Start lib (TypeScript watch)

@@ -10,7 +10,9 @@ export const transformRootPackage = async (
 
   if (!(await pkgFile.exists())) {
     console.error(
-      colors.red(colors.bold("Error: package.json not found in target directory")),
+      colors.red(
+        colors.bold("Error: package.json not found in target directory"),
+      ),
     );
     process.exit(1);
   }

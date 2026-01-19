@@ -12,8 +12,12 @@ function printBanner(): void {
 
 function printSuccess(config: ProjectConfig): void {
   console.log();
-  console.log(colors.green(colors.bold(`✓ Project initialized as "${config.name}"`)));
-  console.log(colors.yellow(colors.bold("🚀 Thunder App template initialized!")));
+  console.log(
+    colors.green(colors.bold(`✓ Project initialized as "${config.name}"`)),
+  );
+  console.log(
+    colors.yellow(colors.bold("🚀 Thunder App template initialized!")),
+  );
   console.log();
   console.log(
     colors.cyan(colors.bold("📍 Project location:")),
@@ -22,7 +26,9 @@ function printSuccess(config: ProjectConfig): void {
   console.log();
   console.log(colors.cyan(colors.bold("Next steps:")));
   console.log(`  1. cd ${config.name}`);
-  console.log("  2. bun install    # installs all workspaces (frontend, lib, backend)");
+  console.log(
+    "  2. bun install    # installs all workspaces (frontend, lib, backend)",
+  );
   console.log("  3. bun run build:lib");
   console.log("  4. bun run dev");
   console.log();
