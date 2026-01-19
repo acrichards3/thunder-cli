@@ -1,6 +1,6 @@
 {
   "name": "create-thunder-app",
-  "version": "1.4.4",
+  "version": "1.4.6",
   "private": false,
   "type": "module",
   "description": "A monorepo template with Vite React frontend, HonoJS backend, and shared lib package",
@@ -14,10 +14,10 @@
     "typescript"
   ],
   "bin": {
-    "create-thunder-app": "bin/index.ts"
+    "create-thunder-app": "dist/cli.js"
   },
   "files": [
-    "bin",
+    "dist/cli.js",
     "scripts",
     ".github",
     "backend/src",
@@ -55,6 +55,7 @@
   "scripts": {
     "build": "bun run build:lib && bun run typecheck && bun run lint && bun run build:frontend && bun run build:backend",
     "build:all": "bun run build:lib && bun run build:frontend && bun run build:backend",
+    "build:cli": "bun build bin/index.ts --outfile dist/cli.js --target node",
     "build:backend": "bun run --filter @thunder-app/backend build",
     "build:frontend": "bun run --filter @thunder-app/frontend build",
     "build:lib": "bun run --filter @thunder-app/lib build",
