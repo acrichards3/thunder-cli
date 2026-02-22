@@ -37,7 +37,7 @@ The backend will show invalid environment variables in the terminal:
 
 ![Invalid Env Vars Backend](/invalid-env-backend.png)
 
-And the frontend will show invalid environment variables in the browser console:
+And the frontend will show invalid environment variables directly in the browser:
 
 ![Invalid Env Vars Frontend](/invalid-env-frontend.png)
 

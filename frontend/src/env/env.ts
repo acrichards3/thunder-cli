@@ -9,7 +9,9 @@ export const envSchema = z.object({
   VITE_PORT: z.coerce.number().default(5173),
 } satisfies Record<`VITE_${string}`, z.ZodType<unknown>>);
 
-export function validatedEnv() {
+export type EnvIssue = { message: string; path: string };
+
+function getEnvSource(): Record<string, unknown> {
   const nodeEnv =
     typeof window === "undefined"
       ? (
@@ -18,19 +20,26 @@ export function validatedEnv() {
           }
         ).process?.env
       : undefined;
-  const envSource = nodeEnv ?? import.meta.env;
-
-  const result = envSchema.safeParse(envSource);
-
-  if (!result.success) {
-    console.error("❌ Invalid Environment Variables");
-    result.error.issues.forEach((issue) => {
-      console.error(`  ${issue.path.join(".")}: ${issue.message}`);
-    });
-    throw new Error("Invalid environment variables");
-  }
-
-  return result.data;
+  return nodeEnv ?? import.meta.env;
 }
 
-export const env = validatedEnv();
+function parseEnv(): { data: z.infer<typeof envSchema> | null; issues: EnvIssue[] } {
+  const result = envSchema.safeParse(getEnvSource());
+
+  if (!result.success) {
+    return {
+      data: null,
+      issues: result.error.issues.map((issue) => ({
+        message: issue.message,
+        path: issue.path.join("."),
+      })),
+    };
+  }
+
+  return { data: result.data, issues: [] };
+}
+
+const parsed = parseEnv();
+
+export const envIssues: EnvIssue[] = parsed.issues;
+export const env = parsed.data;
