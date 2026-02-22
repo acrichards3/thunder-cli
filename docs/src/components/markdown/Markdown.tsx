@@ -155,6 +155,20 @@ export const Markdown: React.FC<MarkdownProps> = ({ content }) => {
             return <p className="text-gray-300 py-2 text-lg leading-relaxed mb-6">{children}</p>;
           },
           pre: ({ children }) => <CodeBlock>{children}</CodeBlock>,
+          table: ({ children }) => (
+            <div className="overflow-x-auto mb-6">
+              <table className="w-full text-left border-collapse">{children}</table>
+            </div>
+          ),
+          tbody: ({ children }) => <tbody>{children}</tbody>,
+          td: ({ children }) => (
+            <td className="text-gray-300 text-base border-b border-cyan-500/10 px-4 py-3">{children}</td>
+          ),
+          th: ({ children }) => (
+            <th className="text-white text-base font-semibold border-b border-cyan-500/30 px-4 py-3">{children}</th>
+          ),
+          thead: ({ children }) => <thead>{children}</thead>,
+          tr: ({ children }) => <tr>{children}</tr>,
           ul: ({ children }) => (
             <ul className="list-disc list-inside text-gray-300 text-lg mb-4 space-y-2 ml-4">{children}</ul>
           ),

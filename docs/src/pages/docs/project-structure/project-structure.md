@@ -4,6 +4,152 @@ Understand how your Thunder App project is organized.
 
 ---
 
-> 🚧 **Documentation coming soon!**
->
-> This section is still being written. Check back later for detailed information about the Thunder App project structure.
+Thunder App is a monorepo managed with [Bun workspaces](https://bun.sh/docs/install/workspaces). It contains three packages — `frontend`, `backend`, and `lib` — along with shared configuration and tooling at the root.
+
+## Overview
+
+```
+my-app/
+├── frontend/          # React + Vite application
+├── backend/           # Hono API server
+├── lib/               # Shared TypeScript library
+├── scripts/           # Development scripts
+├── .cursor/rules/     # Cursor AI rules
+├── .github/workflows/ # CI/CD pipeline
+├── package.json       # Root workspace config & scripts
+├── tsconfig.json      # TypeScript project references
+└── .prettierrc        # Prettier config
+```
+
+Each package has its own `package.json`, `tsconfig.json`, and `.eslintrc.cjs`. The root `package.json` defines workspace scripts that orchestrate builds, linting, and dev servers across all packages.
+
+## Frontend (`frontend/`)
+
+The frontend is a React 19 application built with Vite 5 and styled with Tailwind CSS v4.
+
+```
+frontend/
+├── src/
+│   ├── main.tsx              # App entry point (React, QueryClient, SessionProvider)
+│   ├── App.tsx               # Main component with auth and example API call
+│   ├── index.css             # Global styles
+│   ├── vite-env.d.ts         # Vite type definitions
+│   ├── api/
+│   │   ├── client.util.ts    # Fetch wrapper with CSRF token handling
+│   │   └── hello.example.ts  # Example API call (safe to delete)
+│   ├── components/
+│   │   └── EnvError.tsx      # Error overlay for invalid env variables
+│   └── env/
+│       └── env.ts            # Zod-validated environment variables
+├── public/                   # Static assets
+├── index.html                # HTML entry point
+├── vite.config.ts            # Vite config (proxy, aliases)
+├── tailwind.config.js        # Tailwind configuration
+├── postcss.config.js         # PostCSS configuration
+├── tsconfig.json             # TypeScript config
+├── .eslintrc.cjs             # ESLint config
+├── .env.example              # Example environment variables
+└── package.json              # Frontend dependencies and scripts
+```
+
+**Key files:**
+
+- **`src/main.tsx`** — Mounts the React app with `QueryClientProvider` and `SessionProvider`. If environment variables are invalid, it renders the `EnvError` overlay instead of the app.
+- **`src/api/client.util.ts`** — The `apiFetch` helper automatically attaches CSRF tokens on mutating requests and sends credentials for auth cookies.
+- **`src/env/env.ts`** — Validates `VITE_BACKEND_URL` and `VITE_PORT` using Zod at startup. Invalid variables are surfaced in the UI rather than silently failing.
+- **`vite.config.ts`** — Proxies `/api/auth` requests to the backend during development and sets up `@` and `~` path aliases.
+
+## Backend (`backend/`)
+
+The backend is a Hono v4 API server with Drizzle ORM, Auth.js, and built-in security middleware.
+
+```
+backend/
+├── src/
+│   ├── index.ts              # Hono app (CORS, CSRF, auth, routes)
+│   ├── env/
+│   │   └── env.ts            # Zod-validated environment variables
+│   ├── db/
+│   │   ├── index.ts          # Drizzle database client
+│   │   └── schema/
+│   │       ├── users.ts      # Users table (id, email, name, timestamps)
+│   │       └── auth.ts       # Auth.js tables (accounts, sessions, tokens)
+│   └── security/
+│       ├── rateLimit.ts      # Rate limiting middleware
+│       ├── secureAdapter.ts  # Auth.js adapter with token encryption & session hashing
+│       └── crypto.ts         # AES-256-GCM encryption and SHA-256 hashing
+├── drizzle.config.ts         # Drizzle Kit configuration
+├── tsconfig.json             # TypeScript config
+├── tsconfig.drizzle.json     # TypeScript config for Drizzle migrations
+├── .eslintrc.cjs             # ESLint config
+├── .env.example              # Example environment variables
+└── package.json              # Backend dependencies and scripts
+```
+
+**Key files:**
+
+- **`src/index.ts`** — The main server file. Sets up CORS (locked to `FRONTEND_URL`), secure headers, CSRF protection, rate limiting on auth endpoints, and Auth.js with Google OAuth. Protected routes use `verifyAuth()` middleware.
+- **`src/db/schema/`** — Database schema using Drizzle ORM. The `users` table is merged with Auth.js requirements. Auth tables (`accounts`, `sessions`, `verificationTokens`) are defined separately.
+- **`src/security/secureAdapter.ts`** — Wraps the Drizzle Auth.js adapter to hash session tokens (SHA-256) and optionally encrypt OAuth tokens (AES-256-GCM) before storage.
+- **`src/env/env.ts`** — Validates all required environment variables at startup. The server exits immediately with clear error messages if anything is missing.
+
+## Shared Library (`lib/`)
+
+The `lib` package contains shared TypeScript utilities and types used by both the frontend and backend.
+
+```
+lib/
+├── src/
+│   ├── index.ts              # Package exports
+│   ├── types/
+│   │   └── user.ts           # Shared User type
+│   └── utils/
+│       ├── assertNever.ts    # Exhaustiveness checking for switch/union types
+│       ├── objectUtils.ts    # Type-safe object helpers (keys, entries)
+│       ├── raise.ts          # Throw utility for inline error handling
+│       └── tryCatch.ts       # Tuple-based error handling [result, error]
+├── tsconfig.json             # TypeScript config
+├── .eslintrc.cjs             # ESLint config
+└── package.json              # Lib dependencies and scripts
+```
+
+Both `frontend` and `backend` depend on `lib` via `workspace:*`. Import from it like:
+
+```typescript
+import { raise, tryCatch } from "@your-app/lib";
+```
+
+**Important:** After making changes to `lib`, you need to rebuild it (`bun run build:lib`) or run it in watch mode (`bun run dev:lib`) for changes to be picked up by other packages.
+
+## Root Configuration
+
+| File            | Purpose                                                                        |
+| --------------- | ------------------------------------------------------------------------------ |
+| `package.json`  | Workspace definitions, root scripts (`dev`, `build`, `lint`, `format`, `db:*`) |
+| `tsconfig.json` | TypeScript project references to `frontend`, `lib`, and `backend`              |
+| `.prettierrc`   | Code formatting rules shared across all packages                               |
+| `.gitignore`    | Ignores `node_modules`, `dist`, `.env`, build artifacts                        |
+
+## Scripts (`scripts/`)
+
+Contains `dev.ts`, which starts all three packages simultaneously with color-coded terminal output. Run it with `bun run dev` from the root.
+
+## Cursor Rules (`.cursor/rules/`)
+
+Included rules guide Cursor AI to follow project conventions:
+
+- **bun.md** — Prefer Bun APIs over Node.js equivalents
+- **types.md** — TypeScript strictness and type safety patterns
+- **linting.md** — ESLint rules and code quality expectations
+- **zod.md** — Zod validation patterns
+- **verification.md** — Code verification guidelines
+
+## CI/CD (`.github/workflows/`)
+
+The `ci.yml` workflow runs on every push and PR to `main`:
+
+1. Install dependencies with Bun
+2. Build the `lib` package
+3. Run linting (Prettier + ESLint)
+4. Run type checking
+5. Build frontend and backend

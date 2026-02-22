@@ -1,3 +1,4 @@
+import { raise } from "@thunder-app/lib";
 import { z } from "zod";
 
 /**
@@ -42,4 +43,4 @@ function parseEnv(): { data: z.infer<typeof envSchema> | null; issues: EnvIssue[
 const parsed = parseEnv();
 
 export const envIssues: EnvIssue[] = parsed.issues;
-export const env = parsed.data;
+export const env = parsed.data ?? raise("Environment validation failed");
