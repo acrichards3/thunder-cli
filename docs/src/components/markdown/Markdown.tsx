@@ -6,6 +6,17 @@ interface MarkdownProps {
   content: string;
 }
 
+const extractText = (node: React.ReactNode): string => {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (React.isValidElement(node)) {
+    const props = node.props as { children?: React.ReactNode };
+    return React.Children.toArray(props.children).map(extractText).join("");
+  }
+  if (Array.isArray(node)) return node.map(extractText).join("");
+  return "";
+};
+
 const generateId = (text: string): string => {
   return text
     .toLowerCase()
@@ -97,9 +108,7 @@ export const Markdown: React.FC<MarkdownProps> = ({ content }) => {
             );
           },
           h1: ({ children }) => {
-            const text = React.Children.toArray(children)
-              .map((child) => (typeof child === "string" ? child : ""))
-              .join("");
+            const text = extractText(children);
             const id = generateId(text);
             return (
               <h1 className="text-5xl py-5 font-bold text-white drop-shadow-md mb-6 mt-8 first:mt-0" id={id}>
@@ -108,9 +117,7 @@ export const Markdown: React.FC<MarkdownProps> = ({ content }) => {
             );
           },
           h2: ({ children }) => {
-            const text = React.Children.toArray(children)
-              .map((child) => (typeof child === "string" ? child : ""))
-              .join("");
+            const text = extractText(children);
             const id = generateId(text);
             return (
               <h2 className="text-4xl py-5 font-bold text-white drop-shadow-md mb-4 mt-8" id={id}>
@@ -119,9 +126,7 @@ export const Markdown: React.FC<MarkdownProps> = ({ content }) => {
             );
           },
           h3: ({ children }) => {
-            const text = React.Children.toArray(children)
-              .map((child) => (typeof child === "string" ? child : ""))
-              .join("");
+            const text = extractText(children);
             const id = generateId(text);
             return (
               <h3 className="text-3xl py-5 font-bold text-white drop-shadow-md mb-3 mt-6" id={id}>
@@ -130,9 +135,7 @@ export const Markdown: React.FC<MarkdownProps> = ({ content }) => {
             );
           },
           h4: ({ children }) => {
-            const text = React.Children.toArray(children)
-              .map((child) => (typeof child === "string" ? child : ""))
-              .join("");
+            const text = extractText(children);
             const id = generateId(text);
             return (
               <h4 className="text-2xl py-5 font-bold text-white drop-shadow-md mb-2 mt-4" id={id}>
