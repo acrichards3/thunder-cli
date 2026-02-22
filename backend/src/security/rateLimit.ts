@@ -10,6 +10,15 @@ type Bucket = { count: number; resetAt: number };
 
 const buckets = new Map<string, Bucket>();
 
+function pruneExpiredBuckets(now: number): void {
+  for (const [key, bucket] of buckets) {
+    if (now > bucket.resetAt) buckets.delete(key);
+  }
+}
+
+let lastPruneAt = 0;
+const PRUNE_INTERVAL_MS = 60_000;
+
 function getClientIp(headers: Headers): string {
   const cf = headers.get("cf-connecting-ip");
   const real = headers.get("x-real-ip");
@@ -27,6 +36,11 @@ export function rateLimit(options: RateLimitOptions): MiddlewareHandler {
     const path = new URL(c.req.url).pathname;
     const key = genKey(ip, path);
     const now = Date.now();
+
+    if (now - lastPruneAt > PRUNE_INTERVAL_MS) {
+      lastPruneAt = now;
+      pruneExpiredBuckets(now);
+    }
 
     const bucket = buckets.get(key);
     if (!bucket || now > bucket.resetAt) {
