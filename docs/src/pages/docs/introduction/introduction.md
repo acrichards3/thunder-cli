@@ -17,7 +17,7 @@ This project is opinionated. TypeScript is non-negotiable, and the TypeScript co
 Here's what you get out of the box:
 
 - **Monorepo Structure**: Everything lives in one place: frontend, backend, and shared lib are all managed with Bun workspaces.
-- **Frontend**: React 19 with Vite 5, Tailwind CSS v4, React Query for data fetching, and Auth.js integration.
+- **Frontend**: React 19 with Vite 5, TanStack Router (file-based routing), Tailwind CSS v4, React Query for data fetching, and Auth.js integration.
 - **Backend**: Hono v4 web framework, Drizzle ORM with PostgreSQL, Zod v4 for validation, and Auth.js for authentication.
 - **Shared Lib**: Type-safe shared utilities and types between frontend and backend — no duplicating code across packages.
 - **Code Quality**: ESLint, Prettier (configured via `.prettierrc`), and strict TypeScript across all packages.

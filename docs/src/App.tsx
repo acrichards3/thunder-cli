@@ -50,10 +50,10 @@ const technologies = [
   },
   {
     description:
-      "React Query (TanStack Query) is powerful data synchronization for React. It makes fetching, caching, synchronizing and updating server state in your React applications a breeze.",
-    href: "https://tanstack.com/query",
+      "TanStack Router provides fully type-safe file-based routing with automatic code splitting. TanStack Query (React Query) handles data fetching, caching, and synchronization. Together they power the frontend's navigation and server state.",
+    href: "https://tanstack.com",
     logo: "/logos/react-query.svg",
-    name: "React Query",
+    name: "TanStack Router + Query",
   },
   {
     description:

@@ -1,8 +1,13 @@
-import { helloExample } from "./api/hello.example";
+import { createFileRoute } from "@tanstack/react-router";
+import { helloExample } from "../api/hello.example";
 import { useQuery } from "@tanstack/react-query";
 import { useSession, signIn, signOut } from "@hono/auth-js/react";
 
-function App() {
+export const Route = createFileRoute("/")({
+  component: Home,
+});
+
+function Home() {
   const { data: session, status: sessionStatus } = useSession();
   const { data, error, isLoading } = useQuery({
     queryFn: helloExample,
@@ -52,5 +57,3 @@ function App() {
     </main>
   );
 }
-
-export default App;

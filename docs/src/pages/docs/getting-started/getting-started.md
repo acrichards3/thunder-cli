@@ -75,6 +75,7 @@ Now that you're up and running, here are some recommended next steps:
 
 1. **Explore the project** — Look through `frontend/`, `backend/`, and `lib/` to understand how the monorepo is organized
 2. **Set up authentication** — Configure your Google OAuth credentials in `backend/.env` and push the auth schema with `bun run db:push`
-3. **Build something** — The template is ready to go — start adding routes to the backend and components to the frontend
+3. **Add a route** — Create a new file in `frontend/src/routes/` (e.g. `about.tsx`) and TanStack Router will automatically add it to your route tree
+4. **Build something** — The template is ready to go — start adding routes to the backend and pages to the frontend
 
 Happy coding!

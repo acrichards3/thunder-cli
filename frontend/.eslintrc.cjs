@@ -16,7 +16,14 @@ module.exports = {
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
   ],
-  ignorePatterns: ["dist/**", "node_modules/**", "postcss.config.js", "tailwind.config.js", ".eslintrc.cjs"],
+  ignorePatterns: [
+    "dist/**",
+    "node_modules/**",
+    "postcss.config.js",
+    "tailwind.config.js",
+    ".eslintrc.cjs",
+    "src/routeTree.gen.ts",
+  ],
   rules: {
     // Prefer ?? over || when defaulting
     "@typescript-eslint/prefer-nullish-coalescing": [

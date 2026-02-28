@@ -1,4 +1,4 @@
-import type { EnvIssue } from "../env/env";
+import type { EnvIssue } from "../env/validate";
 
 export function EnvError({ issues }: { issues: EnvIssue[] }) {
   return (

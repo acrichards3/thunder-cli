@@ -1,14 +1,20 @@
 import "./index.css";
-import App from "./App";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SessionProvider } from "@hono/auth-js/react";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { EnvError } from "./components/EnvError";
-import { envIssues } from "./env/env";
+import { envIssues } from "./env/validate";
 import { raise } from "@thunder-app/lib";
+import { routeTree } from "./routeTree.gen";
 
-const queryClient = new QueryClient();
+const router = createRouter({ routeTree });
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
 const root = ReactDOM.createRoot(document.getElementById("root") ?? raise("Root element not found"));
 
 if (envIssues.length > 0) {
@@ -20,11 +26,7 @@ if (envIssues.length > 0) {
 } else {
   root.render(
     <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <SessionProvider>
-          <App />
-        </SessionProvider>
-      </QueryClientProvider>
+      <RouterProvider router={router} />
     </React.StrictMode>,
   );
 }

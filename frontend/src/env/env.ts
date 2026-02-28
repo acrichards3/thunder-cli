@@ -1,46 +1,9 @@
-import { raise } from "@thunder-app/lib";
-import { z } from "zod";
-
 /**
- * Add env variables here as needed. Note that VITE_ prefix is required for frontend variables.
- * Also remember that these variables are public!
+ * You probably won't need to touch this file. Edit schema.ts to add or change env variables.
  */
-export const envSchema = z.object({
-  VITE_BACKEND_URL: z.url(),
-  VITE_PORT: z.coerce.number().default(5173),
-} satisfies Record<`VITE_${string}`, z.ZodType<unknown>>);
+import { raise } from "@thunder-app/lib";
+import { envSchema } from "./schema";
 
-export type EnvIssue = { message: string; path: string };
+const result = envSchema.safeParse(import.meta.env);
 
-function getEnvSource(): Record<string, unknown> {
-  const nodeEnv =
-    typeof window === "undefined"
-      ? (
-          globalThis as {
-            process?: { env?: Record<string, string | undefined> };
-          }
-        ).process?.env
-      : undefined;
-  return nodeEnv ?? import.meta.env;
-}
-
-function parseEnv(): { data: z.infer<typeof envSchema> | null; issues: EnvIssue[] } {
-  const result = envSchema.safeParse(getEnvSource());
-
-  if (!result.success) {
-    return {
-      data: null,
-      issues: result.error.issues.map((issue) => ({
-        message: issue.message,
-        path: issue.path.join("."),
-      })),
-    };
-  }
-
-  return { data: result.data, issues: [] };
-}
-
-const parsed = parseEnv();
-
-export const envIssues: EnvIssue[] = parsed.issues;
-export const env = parsed.data ?? raise("Environment validation failed");
+export const env = result.success ? result.data : raise("Environment validation failed");
