@@ -13,6 +13,10 @@ export const promptIncludeGithub = async (): ReturnType<typeof askYesNo> => {
   return askYesNo("Include GitHub CI/CD pipeline?", true);
 };
 
+export const promptIncludeAmplify = async (): ReturnType<typeof askYesNo> => {
+  return askYesNo("Include AWS Amplify config?", false);
+};
+
 export const promptIncludeAiSettings = async (): ReturnType<typeof askYesNo> => {
   return askYesNo("Use Thunder App recommended AI settings?", true);
 };

@@ -51,6 +51,7 @@
     "lib/.eslintrc.cjs",
     ".cursor",
     ".jscpd.json",
+    "amplify.yml",
     ".prettierignore",
     ".prettierrc",
     ".gitignore",
