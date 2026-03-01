@@ -12,7 +12,7 @@ Always check linting after making changes. Build and lint pipelines must always 
 
 ### Strict Code Standards:
 
-- No comments in code (enforced by `no-comments/disallowComments`)
+- Do not add comments to code — no JSDoc, no inline comments, no block comments. Existing comments that shipped with the template must be left in place.
 - No `console.log`, `console.error`, or `console.warn`
 - No type assertions (`as` keyword) — use proper type narrowing instead
 - No mutation of arrays (`.push`, `.pop`, `.sort`, `.reverse`, `.splice`) — use immutable alternatives (`.concat`, `.toSorted`, `.toReversed`, `.toSpliced`)

@@ -1,3 +1,6 @@
+/**
+ * You probably won't need to touch this file. Edit schema.ts to add or change env variables.
+ */
 import { envSchema } from "./schema";
 
 export type EnvIssue = { message: string; path: string };

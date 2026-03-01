@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly PORT: string | undefined;
+  // Add other env variables here as needed
 }
 
 interface ImportMeta {

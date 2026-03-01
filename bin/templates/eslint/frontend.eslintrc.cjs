@@ -9,7 +9,7 @@ module.exports = {
     project: ["./tsconfig.json"],
     tsconfigRootDir: __dirname,
   },
-  plugins: ["@typescript-eslint", "no-comments", "perfectionist", "react", "react-hooks", "unicorn"],
+  plugins: ["@typescript-eslint", "perfectionist", "react", "react-hooks", "unicorn"],
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -28,9 +28,6 @@ module.exports = {
     "src/vite-env.d.ts",
   ],
   rules: {
-    // ─── No comments ────────────────────────────────────────
-    "no-comments/disallowComments": "error",
-
     // ─── Complexity bounds ───────────────────────────────────
     complexity: ["error", 7],
     "max-depth": ["error", 2],

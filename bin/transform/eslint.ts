@@ -4,7 +4,6 @@ import type { ProjectConfig, PackageJson } from "../types";
 const STRICT_ESLINT_DIR = resolve(import.meta.dir, "../templates/eslint");
 
 const EXTRA_DEV_DEPS: Record<string, string> = {
-  "eslint-plugin-no-comments": "latest",
   "eslint-plugin-perfectionist": "^3",
   "eslint-plugin-sonarjs": "latest",
   "eslint-plugin-unicorn": "^56",

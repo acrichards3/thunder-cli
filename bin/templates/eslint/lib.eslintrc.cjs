@@ -8,7 +8,7 @@ module.exports = {
     project: ["./tsconfig.json"],
     tsconfigRootDir: __dirname,
   },
-  plugins: ["@typescript-eslint", "no-comments", "perfectionist", "unicorn"],
+  plugins: ["@typescript-eslint", "perfectionist", "unicorn"],
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -25,9 +25,6 @@ module.exports = {
     },
   ],
   rules: {
-    // ─── No comments ────────────────────────────────────────
-    "no-comments/disallowComments": "error",
-
     // ─── Complexity bounds ───────────────────────────────────
     complexity: ["error", 7],
     "max-depth": ["error", 2],
