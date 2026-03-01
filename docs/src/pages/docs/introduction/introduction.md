@@ -12,6 +12,18 @@ This project takes a lot of inspiration from [create-t3-app](https://create.t3.g
 
 This project is opinionated. TypeScript is non-negotiable, and the TypeScript config and lint rules are as strict as possible. Strict rules keep your intentions crystal clear — they catch bugs early, improve code quality, and make refactoring feel safe instead of scary. It can feel overwhelming at first, but once you get used to it your codebase will be easier to maintain and more enjoyable to work with.
 
+## AI First
+
+Thunder App is designed for AI-assisted development. When you select "Use Thunder App recommended AI settings" during setup, the CLI configures your project with guardrails that keep AI agents producing clean, compliant code:
+
+- **Strict ESLint config** — A hardened ruleset replaces the default config when AI settings are enabled. It enforces explicit return types, bans type assertions, prevents object and array mutation, limits function complexity, and more. Human developers get a lighter ruleset; AI agents get the strict one.
+- **Cursor rules** — A set of `.cursor/rules/` files tell the AI model exactly how to write code for this stack — component organization, Tailwind conventions, type safety patterns, and which ESLint patterns to follow.
+- **Post-write hooks** — Four shell scripts (`.cursor/hooks/`) run automatically every time the AI writes a file. They format with Prettier, lint with ESLint (auto-fixing what they can), type-check with `tsc`, and scan for duplicate code with `jscpd`. If any check fails, the write is blocked and the AI gets immediate feedback to fix it.
+
+The result: AI agents write code that passes the same quality bar as the rest of the codebase, without you having to manually review and fix every file.
+
+See the [AI Integration](/ai) page for a deeper look at how this works and how to get the most out of it.
+
 ## Key Features
 
 Here's what you get out of the box:

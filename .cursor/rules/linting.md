@@ -14,22 +14,23 @@ Always check linting after making changes. Build and lint pipelines must always 
 ### Component & File Organization:
 
 - **One component per file** — never define multiple components in a single file.
-- **Page-specific components** go in a folder named after the page inside `components/`. If a component has child or helper components, nest them in sub-folders. Folders can be nested as deep as the hierarchy requires.
+- **Every component that renders children components must be a folder, not a file.** If `Dashboard` renders `DashboardHeader`, then `Dashboard` must be a folder containing both. If `DashboardChart` inside that folder also renders its own children (`ChartLegend`, `ChartTooltip`), then `DashboardChart` must also become a nested folder. Apply this rule recursively — any component that is a parent of other components becomes a folder.
+- **Only leaf components** (components that don't render any custom child components) remain as standalone `.tsx` files.
+- **Page-specific components** go in a folder named after the page inside `components/`.
 - **Shared/reusable components** that are used across multiple pages go in `components/common/`.
   ```
   components/
     common/
       Button.tsx
-      Modal.tsx
       Spinner.tsx
     Dashboard/
       Dashboard.tsx
       DashboardHeader.tsx
+      DashboardSidebar.tsx
       DashboardChart/
         DashboardChart.tsx
         ChartLegend.tsx
         ChartTooltip.tsx
-      DashboardSidebar.tsx
     Settings/
       Settings.tsx
       SettingsForm.tsx

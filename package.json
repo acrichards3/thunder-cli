@@ -50,6 +50,7 @@
     "lib/tsconfig.json",
     "lib/.eslintrc.cjs",
     ".cursor",
+    ".jscpd.json",
     ".prettierignore",
     ".prettierrc",
     ".gitignore",

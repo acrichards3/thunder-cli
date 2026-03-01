@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "command": "./.cursor/hooks/prettier.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": "./.cursor/hooks/eslint.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": "./.cursor/hooks/typecheck.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": "./.cursor/hooks/jscpd.sh",
+        "matcher": "Write"
+      }
+    ]
+  }
+}
