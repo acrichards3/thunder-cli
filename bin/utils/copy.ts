@@ -7,7 +7,9 @@ const shouldIgnore = (name: string, config: ProjectConfig): boolean => {
   if (IGNORE_ALWAYS.has(name)) return true;
   if (name === ".github" && !config.includeGithub) return true;
   if (name === ".cursor" && !config.includeAiSettings) return true;
-  if (name === "amplify.yml" && !config.includeAmplify) return true;
+  if (name === "amplify.yml" && !config.includeDeploy) return true;
+  if (name === "Dockerfile" && !config.includeDeploy) return true;
+  if (name === ".dockerignore" && !config.includeDeploy) return true;
   return false;
 };
 

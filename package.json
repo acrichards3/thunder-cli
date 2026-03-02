@@ -52,6 +52,8 @@
     ".cursor",
     ".jscpd.json",
     "amplify.yml",
+    "Dockerfile",
+    ".dockerignore",
     ".prettierignore",
     ".prettierrc",
     ".gitignore",

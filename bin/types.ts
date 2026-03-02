@@ -1,7 +1,7 @@
 export interface ProjectConfig {
   name: string;
   targetDir: string;
-  includeAmplify: boolean;
+  includeDeploy: boolean;
   includeGithub: boolean;
   includeAiSettings: boolean;
 }

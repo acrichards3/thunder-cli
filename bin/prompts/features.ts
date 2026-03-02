@@ -13,8 +13,8 @@ export const promptIncludeGithub = async (): ReturnType<typeof askYesNo> => {
   return askYesNo("Include GitHub CI/CD pipeline?", true);
 };
 
-export const promptIncludeAmplify = async (): ReturnType<typeof askYesNo> => {
-  return askYesNo("Include AWS Amplify config?", false);
+export const promptIncludeDeploy = async (): ReturnType<typeof askYesNo> => {
+  return askYesNo("Include quick deploy setup? (Dockerfile, .dockerignore, amplify.yml)", true);
 };
 
 export const promptIncludeAiSettings = async (): ReturnType<typeof askYesNo> => {
