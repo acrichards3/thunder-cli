@@ -5,7 +5,7 @@ frontend:
       commands:
         - curl -fsSL https://bun.sh/install | bash
         - export PATH="$HOME/.bun/bin:$PATH"
-        - bun install --force
+        - bun install --frozen-lockfile --force
         - bun run build:lib
     build:
       commands:

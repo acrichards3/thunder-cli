@@ -14,7 +14,7 @@ export const promptIncludeGithub = async (): ReturnType<typeof askYesNo> => {
 };
 
 export const promptIncludeDeploy = async (): ReturnType<typeof askYesNo> => {
-  return askYesNo("Include quick deploy setup? (Dockerfile, .dockerignore, amplify.yml)", true);
+  return askYesNo("Include Thunder App quick deploy setup?", true);
 };
 
 export const promptIncludeAiSettings = async (): ReturnType<typeof askYesNo> => {

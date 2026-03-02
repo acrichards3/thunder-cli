@@ -22,7 +22,7 @@ frontend:
       commands:
         - curl -fsSL https://bun.sh/install | bash
         - export PATH="$HOME/.bun/bin:$PATH"
-        - bun install --force
+        - bun install --frozen-lockfile --force
         - bun run build:lib
     build:
       commands:
@@ -60,7 +60,7 @@ Expand **Advanced settings** and add your environment variable:
 
 Click through **Review → Save and deploy**. Amplify will run the `preBuild` phase (installs Bun, installs dependencies, builds the lib package) followed by the `build` phase (builds the frontend). You'll get a public Amplify URL on completion.
 
-> **Note:** Amplify automatically redeploys your frontend every time code is pushed to `main`. No additional CI/CD setup required.
+> **Note:** By default, Amplify automatically redeploys your frontend every time code is pushed to `main`. If you set up the [CI/CD automation](#cicd-automation) workflow below, you should disable Amplify's auto-build to avoid duplicate deployments.
 
 #### 5. Fix SPA routing
 
@@ -98,7 +98,7 @@ COPY package.json bun.lock ./
 COPY lib/package.json lib/
 COPY backend/package.json backend/
 COPY frontend/package.json frontend/
-RUN bun install --force
+RUN bun install --frozen-lockfile --force
 
 COPY lib/ ./lib/
 COPY backend/ ./backend/
@@ -108,19 +108,20 @@ RUN bun run build:lib && bun run build:backend
 FROM oven/bun:1-slim AS runner
 WORKDIR /app
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/lib/dist ./lib/dist
+COPY package.json bun.lock ./
 COPY --from=builder /app/lib/package.json ./lib/
-COPY --from=builder /app/backend/dist ./backend/dist
+COPY --from=builder /app/lib/dist ./lib/dist
 COPY --from=builder /app/backend/package.json ./backend/
-COPY --from=builder /app/backend/node_modules ./backend/node_modules
-COPY package.json ./
+COPY --from=builder /app/backend/dist ./backend/dist
+COPY --from=builder /app/frontend/package.json ./frontend/
+RUN bun install --frozen-lockfile --production
 
+ENV PORT=3000
 EXPOSE 3000
 CMD ["bun", "run", "backend/dist/index.js"]
 ```
 
-The builder copies all workspace `package.json` files (including `frontend/package.json`) so Bun doesn't complain about missing workspaces during install.
+The builder copies all workspace `package.json` files (including `frontend/package.json`) so Bun doesn't complain about missing workspaces during install. The runner stage runs `bun install --production` instead of copying `node_modules` from the builder — this ensures workspace symlinks resolve correctly (e.g. `@your-app/lib`).
 
 #### 2. Create a `.dockerignore` at the repo root
 
@@ -154,12 +155,36 @@ docker run -p 3001:3000 \
 
 #### 4. Install AWS CLI and configure credentials
 
+Install the AWS CLI:
+
 ```bash
 brew install awscli
+```
+
+Before you can use it, you need an IAM user with access keys. Don't use your root AWS account for this.
+
+1. Go to **AWS Console → IAM → Users → Create user**
+2. Enter a name (e.g. `cli-deploy`) and click **Next**
+3. Select **Attach policies directly** and add:
+   - `AmazonEC2ContainerRegistryFullAccess`
+   - `AWSAppRunnerFullAccess`
+4. Click through to create the user
+5. Go to the user → **Security credentials → Create access key**
+6. Select **Command Line Interface (CLI)** as the use case
+7. Copy the **Access Key ID** and **Secret Access Key** — you won't be able to see the secret again
+
+Now configure the CLI with those credentials:
+
+```bash
 aws configure
 ```
 
-Enter your Access Key, Secret Key, and region. Create a dedicated IAM user with `AmazonEC2ContainerRegistryFullAccess` and `AWSAppRunnerFullAccess` policies rather than using the root account.
+It will prompt you for four values:
+
+- **AWS Access Key ID** — paste the key ID from step 7
+- **AWS Secret Access Key** — paste the secret from step 7
+- **Default region name** — your AWS region (e.g. `us-east-2`)
+- **Default output format** — press Enter to accept the default, or type `json`
 
 #### 5. Create an ECR repository
 
@@ -216,3 +241,64 @@ Once both services are live, make sure the URLs are configured correctly on both
 - **App Runner:** Set `FRONTEND_URL` to your Amplify URL (no trailing slash) → redeploy
 
 Trailing slashes in either URL will cause CORS failures.
+
+### CI/CD Automation
+
+If you selected both "Include GitHub CI/CD pipeline?" and "Include Thunder App quick deploy setup?" during `bun create thunder-app`, your project includes a GitHub Actions workflow that automatically builds, lints, type-checks, and deploys on every push to `main`.
+
+The workflow has two jobs:
+
+1. **build-and-lint** — Runs on every push and pull request. Installs dependencies, builds lib, runs lint, typecheck, and builds both frontend and backend.
+2. **deploy** — Runs only on pushes to `main` after `build-and-lint` passes. Builds a Docker image, pushes it to ECR, triggers App Runner redeployment, and triggers Amplify redeployment.
+
+#### Disable Amplify auto-build
+
+Since the GitHub Actions workflow triggers Amplify deployments, you should disable Amplify's built-in auto-build to avoid duplicate deployments:
+
+- Go to **Amplify → your app → App settings → Branch settings**
+- Select your branch and click **Edit**
+- Toggle off **Automatic builds**
+
+#### Add GitHub secrets
+
+Go to **GitHub → your repo → Settings → Secrets and variables → Actions → Secrets** and add:
+
+| Secret                  | Value                      |
+| ----------------------- | -------------------------- |
+| `AWS_ACCESS_KEY_ID`     | IAM user access key ID     |
+| `AWS_SECRET_ACCESS_KEY` | IAM user secret access key |
+
+#### Add GitHub variables
+
+Go to **GitHub → your repo → Settings → Secrets and variables → Actions → Variables** and add:
+
+| Variable                 | Value                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------ |
+| `AWS_REGION`             | Your AWS region (e.g. `us-east-2`)                                                               |
+| `ECR_REPO_URI`           | Your ECR repository URI (e.g. `123456789.dkr.ecr.us-east-2.amazonaws.com/my-app-backend`)        |
+| `APP_RUNNER_SERVICE_ARN` | Your App Runner service ARN (found in App Runner → your service → Configuration)                 |
+| `AMPLIFY_APP_ID`         | Your Amplify app ID (found in Amplify → your app → App settings → General → App ARN, or the URL) |
+
+#### IAM user permissions
+
+Create a dedicated IAM user for CI/CD deployments with the following managed policies:
+
+- `AWSAppRunnerFullAccess`
+- `AmazonEC2ContainerRegistryFullAccess`
+
+You'll also need a custom inline policy to allow the workflow to trigger Amplify builds. Go to **IAM → your user → Add permissions → Create inline policy → JSON** and add:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["amplify:StartJob", "amplify:GetJob", "amplify:ListJobs"],
+      "Resource": "arn:aws:amplify:your-region:your-account-id:apps/your-amplify-app-id/branches/main/jobs/*"
+    }
+  ]
+}
+```
+
+Replace `your-region`, `your-account-id`, and `your-amplify-app-id` with your actual values. The resource ARN includes `branches/main/jobs/*` — if your production branch is named something other than `main`, update the branch name accordingly, or use `branches/*/jobs/*` to allow all branches.
