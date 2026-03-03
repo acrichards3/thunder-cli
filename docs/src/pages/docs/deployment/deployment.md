@@ -44,7 +44,7 @@ Commit and push this file to your repository.
 - Go to **AWS Console → AWS Amplify → Create new app**
 - Select **GitHub** as the source provider
 - Choose your repository and branch (e.g. `main`)
-- Check **"My app is a monorepo"** and enter `/` as the root directory
+- Check **"My app is a monorepo"** and leave the root directory blank
 
 #### 3. Configure build settings
 
@@ -56,29 +56,13 @@ Expand **Advanced settings** and add your environment variable:
 | ------------------ | ------------------------------------------- |
 | `VITE_BACKEND_URL` | Your backend URL (e.g. your App Runner URL) |
 
+For the existing `AMPLIFY_MONOREPO_APP_ROOT` variable, enter `/`
+
 #### 4. Deploy
 
 Click through **Review → Save and deploy**. Amplify will run the `preBuild` phase (installs Bun, installs dependencies, builds the lib package) followed by the `build` phase (builds the frontend). You'll get a public Amplify URL on completion.
 
 > **Note:** By default, Amplify automatically redeploys your frontend every time code is pushed to `main`. If you set up the [CI/CD automation](#cicd-automation) workflow below, you should disable Amplify's auto-build to avoid duplicate deployments.
-
-#### 5. Fix SPA routing
-
-After the initial deploy, configure a rewrite rule so client-side routing works:
-
-- Go to **Amplify → your app → Rewrites and redirects → Add rule**
-- Source: `/<*>`
-- Target: `/index.html`
-- Type: **200 (Rewrite)**
-
-Without this rule, refreshing on any route other than `/` will return a 404.
-
-#### 6. Update backend CORS
-
-Your backend restricts CORS to the `FRONTEND_URL` environment variable. After deploying the frontend, update the backend to allow requests from your new Amplify URL:
-
-- Set `FRONTEND_URL` to your Amplify URL in your backend's environment configuration
-- Redeploy the backend service
 
 ### Backend — AWS App Runner via ECR
 
@@ -189,10 +173,10 @@ It will prompt you for four values:
 #### 5. Create an ECR repository
 
 - Go to **AWS Console → ECR → Create repository**
-- Visibility: **Private**
 - Name: e.g. `my-app-backend`
+- Leave all other options to their defaults
 
-Note the repository URI — you'll need it for the next steps.
+After creating, note the repository URI — you'll need it for the next steps.
 
 #### 6. Push the image to ECR
 
@@ -272,16 +256,16 @@ Go to **GitHub → your repo → Settings → Secrets and variables → Actions 
 
 Go to **GitHub → your repo → Settings → Secrets and variables → Actions → Variables** and add:
 
-| Variable                 | Value                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------ |
-| `AWS_REGION`             | Your AWS region (e.g. `us-east-2`)                                                               |
-| `ECR_REPO_URI`           | Your ECR repository URI (e.g. `123456789.dkr.ecr.us-east-2.amazonaws.com/my-app-backend`)        |
-| `APP_RUNNER_SERVICE_ARN` | Your App Runner service ARN (found in App Runner → your service → Configuration)                 |
-| `AMPLIFY_APP_ID`         | Your Amplify app ID (found in Amplify → your app → App settings → General → App ARN, or the URL) |
+| Variable                 | Value                                                                                                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AWS_REGION`             | Your AWS region (e.g. `us-east-2`)                                                                                                                                      |
+| `ECR_REPO_URI`           | Your ECR repository URI (e.g. `123456789.dkr.ecr.us-east-2.amazonaws.com/my-app-backend`)                                                                               |
+| `APP_RUNNER_SERVICE_ARN` | Your App Runner service ARN (found in App Runner → your service → Configuration)                                                                                        |
+| `AMPLIFY_APP_ID`         | Your Amplify app ID — the short alphanumeric ID (e.g. `dgpzns7car5t6`), found in the Amplify console URL or under App settings → General. This is **not** the full ARN. |
 
 #### IAM user permissions
 
-Create a dedicated IAM user for CI/CD deployments with the following managed policies:
+The IAM user for the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` you used above will need the following permissions in order to enable auto CI/CD deployments:
 
 - `AWSAppRunnerFullAccess`
 - `AmazonEC2ContainerRegistryFullAccess`
