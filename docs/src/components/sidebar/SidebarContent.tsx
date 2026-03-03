@@ -39,6 +39,10 @@ export const SIDEBAR_ITEMS = {
         href: "/recommendations",
         title: "Recommendations",
       },
+      {
+        href: "/ai",
+        title: "AI Integration",
+      },
     ],
     order: 1,
     sectionTitle: "Thunder App",

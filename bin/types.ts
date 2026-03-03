@@ -1,12 +1,9 @@
 export interface ProjectConfig {
   name: string;
   targetDir: string;
+  includeDeploy: boolean;
   includeGithub: boolean;
-  includeCursorRules: boolean;
-  // Future options:
-  // includeAuth: boolean;
-  // router: "tanstack" | "react-router" | "none";
-  // database: "sqlite" | "postgres" | "mysql";
+  includeAiSettings: boolean;
 }
 
 export interface PackageJson {

@@ -1,6 +1,6 @@
 {
   "name": "create-thunder-app",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "private": false,
   "type": "module",
   "description": "A monorepo template with Vite React frontend, HonoJS backend, and shared lib package",
@@ -50,6 +50,10 @@
     "lib/tsconfig.json",
     "lib/.eslintrc.cjs",
     ".cursor",
+    ".jscpd.json",
+    "amplify.yml",
+    "Dockerfile",
+    ".dockerignore",
     ".prettierignore",
     ".prettierrc",
     ".gitignore",

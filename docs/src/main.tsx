@@ -1,5 +1,6 @@
 import "./index.css";
 import React from "react";
+import { Ai } from "./pages/docs/ai/Ai";
 import { App } from "./App";
 import { AuthJs } from "./pages/docs/authjs/AuthJs";
 import { Bun } from "./pages/docs/bun/Bun";
@@ -24,6 +25,11 @@ const rootRoute = createRootRoute({
 });
 
 const routes = {
+  ai: createRoute({
+    component: Ai,
+    getParentRoute: () => rootRoute,
+    path: "/ai",
+  }),
   authjs: createRoute({
     component: AuthJs,
     getParentRoute: () => rootRoute,

@@ -9,7 +9,7 @@ module.exports = {
     project: ["./tsconfig.json"],
     tsconfigRootDir: __dirname,
   },
-  plugins: ["@typescript-eslint", "react", "react-hooks", "sort-keys", "typescript-sort-keys"],
+  plugins: ["@typescript-eslint", "react", "react-hooks", "react-hooks-extra", "sort-keys", "typescript-sort-keys"],
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -68,7 +68,18 @@ module.exports = {
         selector: "BinaryExpression[operator='!=='][left.type='Identifier'][left.name='undefined']",
         message: "Avoid explicit !== undefined comparisons. Prefer nullish checks or refine types.",
       },
+      {
+        selector: "CallExpression[callee.property.name='then']",
+        message: "No .then(). Use async/await instead.",
+      },
+      {
+        selector: "CallExpression[callee.property.name='catch']",
+        message: "No .catch(). Use try/catch with async/await instead.",
+      },
     ],
+    "react-hooks-extra/no-direct-set-state-in-use-effect": "error",
+    "react-hooks-extra/no-unnecessary-use-callback": "error",
+    "react-hooks-extra/no-unnecessary-use-memo": "error",
     "react/jsx-sort-props": ["error", { ignoreCase: false, noSortAlphabetically: false, reservedFirst: false }],
     "react/react-in-jsx-scope": "off",
     "sort-keys": ["error", "asc", { caseSensitive: false, natural: false }],

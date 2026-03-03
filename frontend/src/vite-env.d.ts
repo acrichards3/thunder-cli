@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly PORT?: string;
+  readonly PORT: string | undefined;
   // Add other env variables here as needed
 }
 

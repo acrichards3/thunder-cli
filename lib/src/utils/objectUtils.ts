@@ -7,12 +7,12 @@
 export const isKey = <T extends object>(x: T, k: PropertyKey): k is keyof T => k in x;
 
 /**
- * Type-safe version of Object.keys()
- * @param obj - Object to get keys from
- * @returns - Typed array of keys instead of just string[]
+ * Typed version of Object.entries()
+ * @param obj - Object to get entries from
+ * @returns - Array of key-value pairs with the correct types
  */
-export const objectKeys = <T extends object>(obj: T) => {
-  return Object.keys(obj).filter((k) => isKey(obj, k));
+export const objectEntries = <T extends object>(obj: T): Array<[keyof T, T[keyof T]]> => {
+  return Object.entries(obj) as Array<[keyof T, T[keyof T]]>;
 };
 
 /**
@@ -25,10 +25,10 @@ export const objectFromEntries = <T extends object>(entries: Iterable<readonly [
 };
 
 /**
- * Typed version of Object.entries()
- * @param obj - Object to get entries from
- * @returns - Array of key-value pairs with the correct types
+ * Type-safe version of Object.keys()
+ * @param obj - Object to get keys from
+ * @returns - Typed array of keys instead of just string[]
  */
-export const objectEntries = <T extends object>(obj: T) => {
-  return Object.entries(obj) as Array<[keyof T, T[keyof T]]>;
+export const objectKeys = <T extends object>(obj: T): (keyof T & string)[] => {
+  return Object.keys(obj).filter((k): k is keyof T & string => isKey(obj, k));
 };

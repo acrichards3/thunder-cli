@@ -7,43 +7,42 @@ Thunder App uses [Vite 5](https://vite.dev) as the frontend build tool. Vite pro
 The Vite config lives at `frontend/vite.config.ts`:
 
 ```typescript
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import { config } from "dotenv";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-config({ path: path.resolve(__dirname, ".env") });
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd());
+  const vitePort = env.VITE_PORT ? Number(env.VITE_PORT) : 5173;
 
-const vitePort = process.env.VITE_PORT ? Number(process.env.VITE_PORT) : 5173;
-
-export default defineConfig({
-  plugins: [
-    tanstackRouter({
-      autoCodeSplitting: true,
-      target: "react",
-    }),
-    react(),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "~": path.resolve(__dirname, "./src"),
-    },
-  },
-  server: {
-    cors: false,
-    port: vitePort,
-    proxy: {
-      "/api/auth": {
-        changeOrigin: true,
-        target: process.env.VITE_BACKEND_URL ?? "http://localhost:3000",
+  return {
+    plugins: [
+      tanstackRouter({
+        autoCodeSplitting: true,
+        target: "react",
+      }),
+      react(),
+    ],
+    resolve: {
+      alias: {
+        "~": path.resolve(__dirname, "./src"),
       },
     },
-  },
+    server: {
+      cors: false,
+      port: vitePort,
+      proxy: {
+        "/api/auth": {
+          changeOrigin: true,
+          target: env.VITE_BACKEND_URL ?? "http://localhost:3000",
+        },
+      },
+    },
+  };
 });
 ```
 
@@ -59,13 +58,11 @@ The `@vitejs/plugin-react` plugin provides React Fast Refresh for instant feedba
 
 ## Path Aliases
 
-Two aliases are configured — `@` and `~` — both pointing to `frontend/src/`. The `~` alias is recommended because it is also configured in `tsconfig.json`, giving you full TypeScript support:
+The `~` alias points to `frontend/src/` and is configured in both `vite.config.ts` and `tsconfig.json`, giving you full runtime and TypeScript support:
 
 ```typescript
 import { Button } from "~/components/Button";
 ```
-
-The `@` alias works at runtime (Vite resolves it) but is not in the TypeScript config, so it may cause type-checking errors. Stick with `~` for the best experience.
 
 ## Dev Server Proxy
 
@@ -75,7 +72,7 @@ The Vite dev server proxies `/api/auth` requests to the backend. This allows the
 proxy: {
   "/api/auth": {
     changeOrigin: true,
-    target: process.env.VITE_BACKEND_URL ?? "http://localhost:3000",
+    target: env.VITE_BACKEND_URL ?? "http://localhost:3000",
   },
 },
 ```
@@ -84,7 +81,7 @@ Without this proxy, the browser would treat the frontend and backend as separate
 
 ## Environment Variables
 
-Vite exposes environment variables prefixed with `VITE_` to your application code via `import.meta.env`. Thunder App loads `.env` files using `dotenv` in the Vite config so variables are available at both config time (`process.env`) and runtime (`import.meta.env`).
+Vite exposes environment variables prefixed with `VITE_` to your application code via `import.meta.env`. The Vite config uses `loadEnv` to read `.env` files so variables like `VITE_PORT` and `VITE_BACKEND_URL` are available at config time. In your app code, access them via `import.meta.env`.
 
 The Zod schema in `frontend/src/env/schema.ts` defines and validates all frontend environment variables. See the [First Steps](/first-steps) guide for details on adding new variables.
 

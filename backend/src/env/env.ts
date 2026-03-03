@@ -11,18 +11,18 @@ export const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
 });
 
-export function validatedEnv() {
+export const validatedEnv = (): z.infer<typeof envSchema> => {
   const result = envSchema.safeParse(Bun.env);
 
   if (!result.success) {
-    console.error("❌ Invalid Environment Variables");
+    process.stderr.write("❌ Invalid Environment Variables\n");
     result.error.issues.forEach((issue) => {
-      console.error(`  ${issue.path.join(".")}: ${issue.message}`);
+      process.stderr.write(`  ${issue.path.join(".")}: ${issue.message}\n`);
     });
     process.exit(1);
   }
 
   return result.data;
-}
+};
 
 export const env = validatedEnv();

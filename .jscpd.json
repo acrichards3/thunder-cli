@@ -1,0 +1,14 @@
+{
+  "threshold": 5,
+  "minLines": 6,
+  "minTokens": 75,
+  "reporters": ["console"],
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/pnpm-lock.yaml",
+    "**/*.gen.ts",
+    "**/database.types.ts",
+    "**/locales/**"
+  ]
+}
