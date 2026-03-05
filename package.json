@@ -4,6 +4,7 @@
   "private": false,
   "type": "module",
   "description": "A monorepo template with Vite React frontend, HonoJS backend, and shared lib package",
+  "license": "MIT",
   "homepage": "https://www.thunderapp.io",
   "repository": {
     "type": "git",
@@ -57,6 +58,7 @@
     ".prettierignore",
     ".prettierrc",
     ".gitignore",
+    "LICENSE",
     "README.md",
     "tsconfig.json",
     "package.json"
