@@ -32,7 +32,17 @@ jobs:
         run: bun run typecheck
 
       - name: Run tests
-        run: bun test
+        run: |
+          OUTPUT=$(bun test 2>&1) || {
+            if echo "$OUTPUT" | grep -q "No tests found"; then
+              echo "No test files found, skipping"
+              exit 0
+            else
+              echo "$OUTPUT"
+              exit 1
+            fi
+          }
+          echo "$OUTPUT"
 
       - name: Run build
         env:
