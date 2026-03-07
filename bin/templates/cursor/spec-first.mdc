@@ -1,0 +1,48 @@
+---
+description: Spec-first workflow — AI writes test paths first, user approves, then AI implements
+alwaysApply: true
+---
+
+## Spec-First Development Workflow
+
+When asked to build a new feature, follow this workflow strictly:
+
+### Step 1 — Write the spec
+
+Create only the `.spec.ts` file with the full WHEN/AND/it decision tree. All `it` blocks must be empty. Do not write any implementation code yet.
+
+```typescript
+describe("applyDiscount", () => {
+  describe("WHEN the discount code does not exist", () => {
+    it("throws an invalid discount code error", () => {});
+  });
+
+  describe("WHEN the discount code exists", () => {
+    describe("AND the code has expired", () => {
+      it("throws a discount expired error", () => {});
+    });
+
+    describe("AND the code has not expired", () => {
+      describe("AND the order total is below the minimum spend", () => {
+        it("throws a minimum spend error", () => {});
+      });
+
+      describe("AND the order total meets the minimum spend", () => {
+        it("returns the order with the discount applied", () => {});
+      });
+    });
+  });
+});
+```
+
+### Step 2 — Stop and ask
+
+Present the test structure to the user. Ask if all paths look correct before proceeding. Do not write any implementation code until the user explicitly approves.
+
+### Step 3 — Implement
+
+Only after the user approves the spec:
+
+1. Create the implementation files (controller, actions, service, schema)
+2. Fill in the test bodies with real assertions
+3. Run `bun test` and ensure all tests pass

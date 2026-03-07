@@ -1,3 +1,9 @@
+---
+description: Testing conventions — Bun test runner, WHEN/AND structure, spec file rules
+globs: "**/*.spec.ts, **/*.spec.tsx"
+alwaysApply: false
+---
+
 ## Testing
 
 Use Bun's built-in test runner exclusively. Do not install Jest, Vitest, or any other test framework. Import everything from `bun:test`.
