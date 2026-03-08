@@ -8,7 +8,7 @@
 [![CI](https://github.com/acrichards3/create-vex-app/actions/workflows/ci.yml/badge.svg)](https://github.com/acrichards3/create-vex-app/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/create-vex-app)](./LICENSE)
 
-An AI-first full-stack starter kit with Vite + React frontend, Hono backend, and a shared TypeScript `lib` package — all powered by Bun. Ships with strict linting, post-write hooks, and Cursor rules that keep AI agents writing production-quality code.
+Stop wrestling with annoying AI slop. Vex App is a Bun-powered full-stack starter kit with Vite + React, Hono, and a shared TypeScript lib, built with strict guardrails that make AI agents write production-quality code from the first keystroke.
 
 **[Documentation](https://www.vexapp.io)**
 
