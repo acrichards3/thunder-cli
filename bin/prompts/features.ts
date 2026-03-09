@@ -3,7 +3,7 @@ import { prompt } from "./base";
 
 export const askYesNo = async (question: string, defaultYes = true): Promise<boolean> => {
   const suffix = defaultYes ? "(Y/n)" : "(y/N)";
-  const answer = await prompt(colors.cyan(`${question} ${suffix} `));
+  const answer = await prompt(colors.purple(`${question} ${suffix} `));
   const a = (answer || "").trim().toLowerCase();
   if (!a) return defaultYes;
   return a === "y" || a === "yes";

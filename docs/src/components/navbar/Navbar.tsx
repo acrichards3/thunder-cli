@@ -17,7 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({ hideLogo }) => {
           className="pointer-events-auto transition-opacity duration-200 hover:opacity-80 flex items-center gap-2"
           to="/"
         >
-          <img alt="Vex App Logo" className="h-15 w-15 drop-shadow-lg" src="/logos/vex-app.png" />
+          <img alt="Vex App Logo" className="h-15 w-15 drop-shadow-lg" src="/logos/vex-app-logo.png" />
         </Link>
       )}
       <div className="flex items-center gap-4 text-white/80 pointer-events-auto">

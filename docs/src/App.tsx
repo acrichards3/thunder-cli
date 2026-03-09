@@ -87,7 +87,7 @@ export function App() {
     <main className="relative flex flex-1 flex-col items-center gap-32 justify-start px-4 py-12">
       <Navbar hideLogo />
       <div className="flex flex-col items-center gap-6">
-        <img alt="Vex App Logo" className="h-40 w-40 drop-shadow-lg" src="/logos/vex-app.png" />
+        <img alt="Vex App Logo" className="h-40 w-40 drop-shadow-lg" src="/logos/vex-app-logo.png" />
         <h1 className="text-7xl font-bold text-white drop-shadow-md text-center max-w-5xl">
           Stop wrestling with annoying <span className="text-violet-400">AI slop</span>
         </h1>

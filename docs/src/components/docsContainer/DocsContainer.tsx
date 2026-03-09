@@ -98,7 +98,7 @@ export const DocsContainer: React.FC<DocsContainerProps> = ({ children }) => {
                 onClick={handleCloseMobileMenu}
                 to="/"
               >
-                <img alt="Vex App Logo" className="h-10 w-10 drop-shadow-lg" src="/logos/vex-app.png" />
+                <img alt="Vex App Logo" className="h-10 w-10 drop-shadow-lg" src="/logos/vex-app-logo.png" />
               </Link>
             </div>
             <div className="flex flex-col gap-8 px-4 pb-8">
