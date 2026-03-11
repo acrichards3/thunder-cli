@@ -1,6 +1,6 @@
 ---
 description: Testing conventions — Bun test runner, WHEN/AND structure, spec file rules
-globs: "**/*.spec.ts, **/*.spec.tsx"
+globs: "**/*.spec.ts"
 alwaysApply: true
 ---
 
@@ -8,9 +8,11 @@ alwaysApply: true
 
 Use Bun's built-in test runner exclusively. Do not install Jest, Vitest, or any other test framework. Import everything from `bun:test`.
 
+Testing applies to **logical code only** — files named `*.controller.ts`, `*.actions.ts`, `*.service.ts`, and utilities in `lib/src/`. Do not write tests for Zod schemas, Drizzle table definitions, index files, config files, environment definitions, or any frontend/React/JSX code. If a file contains no branching logic, it does not need a spec.
+
 ### Test File Location
 
-Co-locate test files next to the source file they test. Always use `.spec.ts` — not `.test.ts`.
+Co-locate test files next to the source file they test. Always use `.spec.ts` — not `.test.ts` and never `.spec.tsx`.
 
 ```
 features/
@@ -21,6 +23,7 @@ features/
     users.actions.spec.ts
     users.service.ts
     users.service.spec.ts
+    users.schema.ts        ← no spec needed (declaration only)
 ```
 
 ### Test Structure
