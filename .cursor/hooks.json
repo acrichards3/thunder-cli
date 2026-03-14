@@ -7,6 +7,14 @@
         "matcher": "Write"
       },
       {
+        "command": ".cursor/hooks/tsconfig-guard.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": ".cursor/hooks/tsconfig-guard.sh",
+        "matcher": "Delete"
+      },
+      {
         "command": ".cursor/hooks/spec-check.sh",
         "matcher": "Write"
       },

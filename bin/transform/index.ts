@@ -11,6 +11,7 @@ const SPEC_MARKER_TEMPLATE = resolve(import.meta.dir, "../templates/cursor/spec-
 const SPEC_DELETE_GUARD_TEMPLATE = resolve(import.meta.dir, "../templates/cursor/spec-delete-guard.sh");
 const SPEC_LINT_TEMPLATE = resolve(import.meta.dir, "../templates/cursor/spec-lint.sh");
 const ESLINT_GUARD_TEMPLATE = resolve(import.meta.dir, "../templates/cursor/eslint-guard.sh");
+const TSCONFIG_GUARD_TEMPLATE = resolve(import.meta.dir, "../templates/cursor/tsconfig-guard.sh");
 
 interface HookEntry {
   command: string;
@@ -80,7 +81,31 @@ const applySpecCheck = async (config: ProjectConfig): Promise<void> => {
   const eslintGuardDest = resolve(config.targetDir, ".cursor", "hooks", "eslint-guard.sh");
   await Bun.write(eslintGuardDest, Bun.file(ESLINT_GUARD_TEMPLATE));
 
+  const tsconfigGuardDest = resolve(config.targetDir, ".cursor", "hooks", "tsconfig-guard.sh");
+  await Bun.write(tsconfigGuardDest, Bun.file(TSCONFIG_GUARD_TEMPLATE));
+
   await Bun.write(resolve(config.targetDir, ".spec-pending"), "");
+
+  const bunfigContent = '[test]\nroot = "src"\npreload = ["./src/test-setup.ts"]\n';
+  await Bun.write(resolve(config.targetDir, "backend", "bunfig.toml"), bunfigContent);
+  await Bun.write(resolve(config.targetDir, "lib", "bunfig.toml"), bunfigContent);
+
+  const testSetup = [
+    "Object.assign(Bun.env, {",
+    '  AUTH_SECRET: "test-secret-for-testing-only",',
+    '  DATABASE_URL: "postgres://localhost:5432/test",',
+    '  GOOGLE_CLIENT_ID: "test-client-id",',
+    '  GOOGLE_CLIENT_SECRET: "test-client-secret",',
+    "});",
+    "",
+  ].join("\n");
+  await Bun.write(resolve(config.targetDir, "backend", "src", "test-setup.ts"), testSetup);
+
+  const tsconfigEslint =
+    JSON.stringify({ extends: "./tsconfig.json", include: ["src/**/*", "src/**/*.spec.ts"], exclude: [] }, null, 2) +
+    "\n";
+  await Bun.write(resolve(config.targetDir, "backend", "tsconfig.eslint.json"), tsconfigEslint);
+  await Bun.write(resolve(config.targetDir, "lib", "tsconfig.eslint.json"), tsconfigEslint);
 
   const hooksJsonPath = resolve(config.targetDir, ".cursor", "hooks.json");
   const parsed: unknown = JSON.parse(await Bun.file(hooksJsonPath).text());
@@ -92,6 +117,8 @@ const applySpecCheck = async (config: ProjectConfig): Promise<void> => {
   parsed.hooks.preToolUse = [
     ...(parsed.hooks.preToolUse ?? []),
     { command: ".cursor/hooks/eslint-guard.sh", matcher: "Write" },
+    { command: ".cursor/hooks/tsconfig-guard.sh", matcher: "Write" },
+    { command: ".cursor/hooks/tsconfig-guard.sh", matcher: "Delete" },
     { command: ".cursor/hooks/spec-check.sh", matcher: "Write" },
     { command: ".cursor/hooks/spec-lint.sh", matcher: "Write" },
     { command: ".cursor/hooks/spec-delete-guard.sh", matcher: "Delete" },

@@ -44,6 +44,9 @@ fi
 BASENAME=$(basename "$FILE")
 [[ "$BASENAME" == "index.ts" ]] && { echo '{"permission": "allow"}'; exit 0; }
 
+# Test infrastructure — preload and setup files
+[[ "$BASENAME" == "test-setup.ts" ]] && { echo '{"permission": "allow"}'; exit 0; }
+
 # Route/entry-point files — wiring only, not logic
 [[ "$FILE" == */routes/* ]] && { echo '{"permission": "allow"}'; exit 0; }
 

@@ -13,6 +13,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "test": "bun test",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },
