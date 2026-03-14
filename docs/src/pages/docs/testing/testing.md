@@ -22,11 +22,13 @@ bun run test:lib
 
 Backend tests that hit the database require a running Postgres instance. Vex App ships with a `docker-compose.test.yml` that spins up an isolated Postgres container on port `5433` — separate from your dev database so there's no risk of touching real data.
 
-Before running integration tests for the first time, generate your migrations if you haven't already:
+Before running integration tests, generate your migrations:
 
 ```bash
 bun run db:generate
 ```
+
+Re-run this command any time you add or change a table in `backend/src/db/schema/`. The test database is migrated from these files on every test run, so they must be up to date.
 
 Then start the test database and run:
 
@@ -42,6 +44,11 @@ bun run test:db:down
 ```
 
 The `test:db:up` command uses Docker's `--wait` flag, so it blocks until the container is healthy before returning. The `backend/src/test-setup.ts` preload file sets mock environment variables and runs Drizzle migrations against the test database before any tests execute.
+
+If you forget either prerequisite, you'll get a clear error before any tests run:
+
+- **No migration files** → `[test-setup] No migration files found. Run bun run db:generate first.`
+- **Container not running** → `[test-setup] Could not connect to the test database. Run bun run test:db:up first.`
 
 Each spec file is responsible for inserting the data it needs in `beforeEach` and cleaning up in `afterEach`. Tests should never depend on data left over from another test.
 

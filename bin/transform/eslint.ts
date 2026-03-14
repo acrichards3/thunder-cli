@@ -34,7 +34,9 @@ const TEST_SETUP_CONTENT = [
   'import { drizzle } from "drizzle-orm/bun-sql";',
   'import { migrate } from "drizzle-orm/bun-sql/migrator";',
   'import { SQL } from "bun";',
-  'import { raise } from "@<project-name>/lib";',
+  'import { raise, tryCatchAsync } from "@<project-name>/lib";',
+  'import { readdirSync } from "fs";',
+  'import { resolve } from "path";',
   "",
   "Object.assign(Bun.env, {",
   '  AUTH_SECRET: "test-secret-for-testing-only",',
@@ -43,10 +45,34 @@ const TEST_SETUP_CONTENT = [
   '  GOOGLE_CLIENT_SECRET: "test-client-secret",',
   "});",
   "",
+  'const migrationsFolder = resolve(import.meta.dir, "db/migrations");',
+  'const migrationFiles = readdirSync(migrationsFolder).filter((f) => f.endsWith(".sql"));',
+  "",
+  "if (migrationFiles.length === 0) {",
+  "  process.stderr.write(",
+  '    "\\n[test-setup] No migration files found in backend/src/db/migrations/\\n" +',
+  '      "Run `bun run db:generate` first to generate the initial migration, then re-run tests.\\n\\n",',
+  "  );",
+  "  process.exit(1);",
+  "}",
+  "",
   'const client = new SQL(Bun.env.DATABASE_URL ?? raise("DATABASE_URL not set"));',
+  "",
+  "const [, pingError] = await tryCatchAsync(async (): Promise<void> => {",
+  "  await client`SELECT 1`;",
+  "});",
+  "if (pingError !== null) {",
+  "  process.stderr.write(",
+  '    "\\n[test-setup] Could not connect to the test database.\\n" +',
+  '      "Make sure the Docker test container is running: bun run test:db:up\\n" +',
+  "      `Details: ${pingError.message}\\n\\n`,",
+  "  );",
+  "  process.exit(1);",
+  "}",
+  "",
   "const db = drizzle({ client });",
   "",
-  'await migrate(db, { migrationsFolder: "./src/db/migrations" });',
+  "await migrate(db, { migrationsFolder });",
   "await client.end();",
   "",
 ].join("\n");
@@ -69,15 +95,16 @@ const DOCKER_COMPOSE_TEST_CONTENT = [
   "",
 ].join("\n");
 
-const BUNFIG_CONTENT = '[test]\nroot = "src"\npreload = ["./src/test-setup.ts"]\n';
+const BUNFIG_BACKEND_CONTENT = '[test]\nroot = "src"\npreload = ["./src/test-setup.ts"]\n';
+const BUNFIG_LIB_CONTENT = '[test]\nroot = "src"\n';
 
 const TSCONFIG_ESLINT_CONTENT =
   JSON.stringify({ extends: "./tsconfig.json", include: ["src/**/*"], exclude: [] }, null, 2) + "\n";
 
 async function applyTestSetup(targetDir: string): Promise<void> {
   await Promise.all([
-    Bun.write(resolve(targetDir, "backend", "bunfig.toml"), BUNFIG_CONTENT),
-    Bun.write(resolve(targetDir, "lib", "bunfig.toml"), BUNFIG_CONTENT),
+    Bun.write(resolve(targetDir, "backend", "bunfig.toml"), BUNFIG_BACKEND_CONTENT),
+    Bun.write(resolve(targetDir, "lib", "bunfig.toml"), BUNFIG_LIB_CONTENT),
     Bun.write(resolve(targetDir, "backend", "src", "test-setup.ts"), TEST_SETUP_CONTENT),
     Bun.write(resolve(targetDir, "backend", "tsconfig.eslint.json"), TSCONFIG_ESLINT_CONTENT),
     Bun.write(resolve(targetDir, "lib", "tsconfig.eslint.json"), TSCONFIG_ESLINT_CONTENT),
