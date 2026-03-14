@@ -66,10 +66,13 @@ These run before every file write and can block it entirely:
 
 - **`spec-check.sh`** — If a `.spec-pending` file has content, blocks any implementation write. Also blocks writing markdown files as fake "specs" and enforces that a co-located `.spec.ts` file exists before any logical file (controller, actions, service) can be written.
 - **`spec-lint.sh`** — Parses incoming spec file content and blocks the write if it contains multiple `it` or `it.todo` calls within a single `describe` block. Enforces one `it` per `describe` before the file is even saved.
-- **`spec-marker.sh`** — After a `.spec.ts` file is written, appends the path to `.spec-pending` to signal that specs are awaiting approval.
 - **`eslint-guard.sh`** — Blocks any write to ESLint config files or custom rule files without explicit user permission.
 - **`tsconfig-guard.sh`** — Blocks any write or delete targeting `tsconfig*.json` files.
 - **`spec-delete-guard.sh`** — Requires user confirmation before the AI is allowed to delete a `.spec.ts` file.
+
+### Post-Write Hook (`postToolUse`)
+
+- **`spec-marker.sh`** — After a `.spec.ts` file is written, appends the path to `.spec-pending` to signal that specs are awaiting approval.
 
 ### Stop Hook (`eslint-stop.sh`)
 

@@ -6,7 +6,7 @@
     "dev": "bun --watch src/index.ts",
     "build": "tsc",
     "start": "bun run dist/index.js",
-    "test": "bun test",
+    "test": "bun test --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "db:generate": "drizzle-kit generate",

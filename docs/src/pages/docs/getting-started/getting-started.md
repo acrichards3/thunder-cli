@@ -22,8 +22,8 @@ bun create vex-app@latest
 The CLI will guide you through the setup process and ask a few questions:
 
 - **Project name** — The name of your new directory
-- **Include GitHub CI/CD pipeline?** — Adds GitHub Actions workflows
-- **Include Vex App quick deploy setup?** — Adds Dockerfile and deploy config
+- **Include GitHub CI/CD pipeline?** — Adds a GitHub Actions workflow with lint, typecheck, tests, and build
+- **Include Vex App quick deploy setup?** _(only asked if you said yes above)_ — Extends the workflow with an auto-deploy job to AWS App Runner and Amplify
 - **Use AI spec-first workflow?** — Enables the three-step spec-before-implementation workflow (see [Testing](/testing))
 
 ![Vex App CLI](/vex-app-cli.png)
