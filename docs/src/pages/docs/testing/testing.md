@@ -2,7 +2,7 @@
 
 Vex App uses [Bun's built-in test runner](https://bun.com/docs/test) — no Jest, Vitest, or any other framework needed. Tests are written with `describe` and `it` from `bun:test` and run with a single command.
 
-If you opted into the AI settings during project setup, your AI agent will automatically follow these testing conventions — including the WHEN/AND structure, `.spec.ts` file naming, and all the rules below. The Cursor rules and ESLint overrides enforce these patterns so the agent writes tests the same way you would.
+Your AI agent will automatically follow these testing conventions — including the WHEN/AND structure, `.spec.ts` file naming, and all the rules below. The Cursor rules and ESLint overrides enforce these patterns so the agent writes tests the same way you would.
 
 ## Running Tests
 
@@ -17,6 +17,35 @@ bun run test:backend
 bun run test:frontend
 bun run test:lib
 ```
+
+## Integration Tests (Database)
+
+Backend tests that hit the database require a running Postgres instance. Vex App ships with a `docker-compose.test.yml` that spins up an isolated Postgres container on port `5433` — separate from your dev database so there's no risk of touching real data.
+
+Before running integration tests for the first time, generate your migrations if you haven't already:
+
+```bash
+bun run db:generate
+```
+
+Then start the test database and run:
+
+```bash
+# Start the test database
+bun run test:db:up
+
+# Run all tests
+bun run test
+
+# Stop the test database when done
+bun run test:db:down
+```
+
+The `test:db:up` command uses Docker's `--wait` flag, so it blocks until the container is healthy before returning. The `backend/src/test-setup.ts` preload file sets mock environment variables and runs Drizzle migrations against the test database before any tests execute.
+
+Each spec file is responsible for inserting the data it needs in `beforeEach` and cleaning up in `afterEach`. Tests should never depend on data left over from another test.
+
+> **Prerequisites**: [Docker](https://docs.docker.com/get-docker/) must be installed and running. Pure unit tests in `lib/` do not require Docker.
 
 ## Test File Convention
 

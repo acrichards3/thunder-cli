@@ -31,12 +31,41 @@ const RULE_FILES = [
 ] as const satisfies readonly string[];
 
 const TEST_SETUP_CONTENT = [
+  'import { drizzle } from "drizzle-orm/bun-sql";',
+  'import { migrate } from "drizzle-orm/bun-sql/migrator";',
+  'import { SQL } from "bun";',
+  'import { raise } from "@<project-name>/lib";',
+  "",
   "Object.assign(Bun.env, {",
   '  AUTH_SECRET: "test-secret-for-testing-only",',
-  '  DATABASE_URL: "postgres://localhost:5432/test",',
+  '  DATABASE_URL: "postgres://postgres:test@localhost:5433/test",',
   '  GOOGLE_CLIENT_ID: "test-client-id",',
   '  GOOGLE_CLIENT_SECRET: "test-client-secret",',
   "});",
+  "",
+  'const client = new SQL(Bun.env.DATABASE_URL ?? raise("DATABASE_URL not set"));',
+  "const db = drizzle({ client });",
+  "",
+  'await migrate(db, { migrationsFolder: "./src/db/migrations" });',
+  "await client.end();",
+  "",
+].join("\n");
+
+const DOCKER_COMPOSE_TEST_CONTENT = [
+  "services:",
+  "  postgres-test:",
+  "    image: postgres:16-alpine",
+  "    environment:",
+  "      POSTGRES_DB: test",
+  "      POSTGRES_PASSWORD: test",
+  "      POSTGRES_USER: postgres",
+  "    healthcheck:",
+  "      interval: 2s",
+  "      retries: 10",
+  '      test: ["CMD-SHELL", "pg_isready -U postgres"]',
+  "      timeout: 5s",
+  "    ports:",
+  '      - "5433:5432"',
   "",
 ].join("\n");
 
@@ -52,6 +81,7 @@ async function applyTestSetup(targetDir: string): Promise<void> {
     Bun.write(resolve(targetDir, "backend", "src", "test-setup.ts"), TEST_SETUP_CONTENT),
     Bun.write(resolve(targetDir, "backend", "tsconfig.eslint.json"), TSCONFIG_ESLINT_CONTENT),
     Bun.write(resolve(targetDir, "lib", "tsconfig.eslint.json"), TSCONFIG_ESLINT_CONTENT),
+    Bun.write(resolve(targetDir, "docker-compose.test.yml"), DOCKER_COMPOSE_TEST_CONTENT),
   ]);
 }
 
@@ -119,6 +149,14 @@ export async function applyStrictEslint(config: ProjectConfig): Promise<void> {
     delete devDeps["eslint-plugin-sort-keys"];
     delete devDeps["eslint-plugin-typescript-sort-keys"];
     pkg.devDependencies = devDeps;
+
+    const scripts = pkg.scripts ?? {};
+    pkg.scripts = {
+      ...scripts,
+      "test:db:down": "docker compose -f docker-compose.test.yml down",
+      "test:db:up": "docker compose -f docker-compose.test.yml up -d --wait",
+    };
+
     await Bun.write(rootPkgPath, JSON.stringify(pkg, null, 2) + "\n");
   }
 }

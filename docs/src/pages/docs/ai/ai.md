@@ -1,16 +1,14 @@
 # AI Integration
 
-Vex App ships with an optional AI configuration layer that keeps AI agents writing clean, compliant code. When you select "Use Vex App recommended AI settings" during `bun create vex-app`, the CLI sets up three systems that work together: a strict ESLint config, Cursor rules, and hooks.
+Vex App is built for AI-assisted development. Every project ships with a strict ESLint config, Cursor rules, and hooks that work together to keep AI agents writing clean, compliant code.
 
 ## How It Works
 
-The AI settings are opt-in. If you say yes during setup, the CLI:
+When you run `bun create vex-app`, the CLI automatically sets up three systems:
 
-1. **Swaps the ESLint configs** in `frontend/`, `backend/`, and `lib/` for strict versions that add plugins like `sonarjs`, `unicorn`, and `perfectionist`, along with rules covering complexity limits, immutability, explicit return types, and more.
-2. **Copies `.cursor/rules/`** with guidance files that tell the AI model how to structure components, handle types, use Tailwind, and follow project conventions.
-3. **Copies `.cursor/hooks/`** with shell scripts and a `hooks.json` config. Pre-write hooks run before every file write and can block it. Post-write hooks run after every file write.
-
-If you say no, you get the standard ESLint config without the extra plugins, and no `.cursor/` directory is created.
+1. **Strict ESLint configs** in `frontend/`, `backend/`, and `lib/` with plugins like `sonarjs`, `unicorn`, and `perfectionist`, along with rules covering complexity limits, immutability, explicit return types, and more.
+2. **`.cursor/rules/`** with guidance files that tell the AI model how to structure components, handle types, use Tailwind, and follow project conventions.
+3. **`.cursor/hooks/`** with shell scripts and a `hooks.json` config. Pre-write hooks run before every file write and can block it. A stop hook runs at the end of every agent turn to enforce quality gates.
 
 ## Strict ESLint
 
@@ -25,7 +23,7 @@ The strict config builds on top of `@typescript-eslint/recommended-type-checked`
 | **Error handling** | No raw `try/catch` blocks — use `tryCatch()` or `tryCatchAsync()` from the lib workspace. No `.then()` or `.catch()` on promises. Use `async`/`await` with the tuple utilities instead.    |
 | **Sorting**        | Alphabetical sorting of object keys, interface properties, and object types via `perfectionist`                                                                                            |
 
-Human developers can use the lighter default config by opting out of AI settings during setup. The strict config is specifically tuned for AI agents that need hard guardrails rather than judgment calls.
+Human developers benefit from the same guardrails — the strict config catches bugs early and keeps codebases maintainable.
 
 ## Cursor Rules
 
