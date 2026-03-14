@@ -125,8 +125,15 @@ const RESTRICTED_SYNTAX = [
     message: "No try/catch blocks. Use tryCatch() or tryCatchAsync() from the lib workspace instead.",
     selector: "TryStatement",
   },
+  {
+    message: "Use apiFetch from ~/api/client.util instead of raw fetch(). It handles CSRF tokens and credentials.",
+    selector: "CallExpression[callee.name='fetch']",
+  },
+  {
+    message: "expect() is only allowed in spec files (*.spec.ts). Move assertions to a test file.",
+    selector: "CallExpression[callee.name='expect']",
+  },
 ];
-
 export default [
   {
     ignores: [
@@ -178,6 +185,7 @@ export default [
         { allowExpressions: true, allowIIFEs: true, allowTypedFunctionExpressions: true },
       ],
       "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "error",
       "@typescript-eslint/no-non-null-asserted-nullish-coalescing": "error",
       "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
@@ -200,6 +208,7 @@ export default [
         { allowNullableBoolean: true, allowNullableObject: false, allowNullableString: false, allowNumber: false },
       ],
       "@typescript-eslint/switch-exhaustiveness-check": "error",
+      "@typescript-eslint/require-await": "error",
       complexity: ["error", 7],
       curly: ["error", "all"],
       eqeqeq: ["error", "always", { null: "ignore" }],
@@ -242,6 +251,7 @@ export default [
       "sonarjs/max-switch-cases": ["error", 10],
       "sonarjs/no-collapsible-if": "error",
       "sonarjs/no-commented-code": "off",
+      "sonarjs/no-dead-store": "error",
       "sonarjs/no-duplicated-branches": "error",
       "sonarjs/no-identical-functions": "error",
       "sonarjs/no-nested-conditional": "error",
@@ -251,6 +261,7 @@ export default [
       "unicorn/filename-case": "off",
       "unicorn/no-abusive-eslint-disable": "off",
       "unicorn/no-array-for-each": "off",
+      "unicorn/no-await-expression-member": "error",
       "unicorn/no-for-loop": "error",
       "unicorn/no-lonely-if": "error",
       "unicorn/no-negated-condition": "error",
@@ -264,6 +275,7 @@ export default [
       "unicorn/prefer-array-flat": "error",
       "unicorn/prefer-array-flat-map": "error",
       "unicorn/prefer-array-some": "error",
+      "unicorn/prefer-at": "error",
       "unicorn/prefer-logical-operator-over-ternary": "error",
       "unicorn/prefer-module": "off",
       "unicorn/prefer-switch": ["error", { minimumCases: 3 }],
@@ -277,6 +289,12 @@ export default [
     files: ["**/*.tsx"],
     rules: {
       "sonarjs/function-return-type": "off",
+    },
+  },
+  {
+    files: ["src/api/client.util.ts", "src/env/**"],
+    rules: {
+      "no-restricted-syntax": "off",
     },
   },
   {

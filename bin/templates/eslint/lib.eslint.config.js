@@ -4,6 +4,10 @@ import perfectionist from "eslint-plugin-perfectionist";
 import sonarjs from "eslint-plugin-sonarjs";
 import unicorn from "eslint-plugin-unicorn";
 import describeStructure from "./eslint-rules/describe-structure.js";
+import noDuplicateDescribe from "./eslint-rules/no-duplicate-describe.js";
+import noEmptyIt from "./eslint-rules/no-empty-it.js";
+import noMultipleAssertions from "./eslint-rules/no-multiple-assertions.js";
+import noTodoWithoutDescription from "./eslint-rules/no-todo-without-description.js";
 
 const RESTRICTED_SYNTAX = [
   {
@@ -83,6 +87,10 @@ const RESTRICTED_SYNTAX = [
     message: "No try/catch blocks. Use tryCatch() or tryCatchAsync() from the lib workspace instead.",
     selector: "TryStatement",
   },
+  {
+    message: "expect() is only allowed in spec files (*.spec.ts). Move assertions to a test file.",
+    selector: "CallExpression[callee.name='expect']",
+  },
 ];
 
 export default [
@@ -120,6 +128,7 @@ export default [
         { allowExpressions: true, allowIIFEs: true, allowTypedFunctionExpressions: true },
       ],
       "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "error",
       "@typescript-eslint/no-non-null-asserted-nullish-coalescing": "error",
       "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
@@ -142,6 +151,7 @@ export default [
         { allowNullableBoolean: true, allowNullableObject: false, allowNullableString: false, allowNumber: false },
       ],
       "@typescript-eslint/switch-exhaustiveness-check": "error",
+      "@typescript-eslint/require-await": "error",
       complexity: ["error", 7],
       curly: ["error", "all"],
       eqeqeq: ["error", "always", { null: "ignore" }],
@@ -176,6 +186,7 @@ export default [
       "sonarjs/max-switch-cases": ["error", 10],
       "sonarjs/no-collapsible-if": "error",
       "sonarjs/no-commented-code": "off",
+      "sonarjs/no-dead-store": "error",
       "sonarjs/no-duplicated-branches": "error",
       "sonarjs/no-identical-functions": "error",
       "sonarjs/no-nested-conditional": "error",
@@ -185,6 +196,7 @@ export default [
       "unicorn/filename-case": "off",
       "unicorn/no-abusive-eslint-disable": "off",
       "unicorn/no-array-for-each": "off",
+      "unicorn/no-await-expression-member": "error",
       "unicorn/no-for-loop": "error",
       "unicorn/no-lonely-if": "error",
       "unicorn/no-negated-condition": "error",
@@ -198,6 +210,7 @@ export default [
       "unicorn/prefer-array-flat": "error",
       "unicorn/prefer-array-flat-map": "error",
       "unicorn/prefer-array-some": "error",
+      "unicorn/prefer-at": "error",
       "unicorn/prefer-logical-operator-over-ternary": "error",
       "unicorn/prefer-module": "off",
       "unicorn/prefer-switch": ["error", { minimumCases: 3 }],
@@ -220,8 +233,24 @@ export default [
   },
   {
     files: ["**/*.spec.ts"],
+    plugins: {
+      local: {
+        rules: {
+          "describe-structure": describeStructure,
+          "no-duplicate-describe": noDuplicateDescribe,
+          "no-empty-it": noEmptyIt,
+          "no-multiple-assertions": noMultipleAssertions,
+          "no-todo-without-description": noTodoWithoutDescription,
+        },
+      },
+    },
     rules: {
       complexity: "off",
+      "local/describe-structure": "error",
+      "local/no-duplicate-describe": "error",
+      "local/no-empty-it": "error",
+      "local/no-multiple-assertions": "error",
+      "local/no-todo-without-description": "error",
       "max-lines": "off",
       "max-lines-per-function": "off",
       "max-nested-callbacks": "off",
@@ -230,19 +259,18 @@ export default [
       "no-restricted-syntax": [
         "error",
         { message: "Use it() instead of test().", selector: "CallExpression[callee.name='test']" },
+        {
+          message: "No it.skip() — remove or fix the test instead.",
+          selector: "CallExpression[callee.object.name='it'][callee.property.name='skip']",
+        },
+        {
+          message: "No describe.skip() — remove or fix the test instead.",
+          selector: "CallExpression[callee.object.name='describe'][callee.property.name='skip']",
+        },
       ],
       "sonarjs/cognitive-complexity": "off",
       "sonarjs/no-identical-functions": "off",
       "unicorn/consistent-function-scoping": "off",
-    },
-  },
-  {
-    files: ["**/*.spec.ts"],
-    plugins: {
-      local: { rules: { "describe-structure": describeStructure } },
-    },
-    rules: {
-      "local/describe-structure": "error",
     },
   },
 ];

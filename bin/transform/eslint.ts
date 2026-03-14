@@ -22,6 +22,14 @@ const WORKSPACE_CONFIGS: Array<{ eslintTemplate: string; workspace: string }> = 
 
 const WORKSPACES_WITH_CUSTOM_RULES = ["backend", "lib"] as const satisfies readonly string[];
 
+const RULE_FILES = [
+  "describe-structure.js",
+  "no-duplicate-describe.js",
+  "no-empty-it.js",
+  "no-multiple-assertions.js",
+  "no-todo-without-description.js",
+] as const satisfies readonly string[];
+
 async function overwriteEslintConfig(targetDir: string, workspace: string, templateName: string): Promise<void> {
   const src = resolve(STRICT_ESLINT_DIR, templateName);
   const dest = resolve(targetDir, workspace, "eslint.config.js");
@@ -31,9 +39,11 @@ async function overwriteEslintConfig(targetDir: string, workspace: string, templ
 async function copyEslintRules(targetDir: string, workspace: string): Promise<void> {
   const rulesDestDir = resolve(targetDir, workspace, "eslint-rules");
   mkdirSync(rulesDestDir, { recursive: true });
-  const src = resolve(ESLINT_RULES_DIR, "describe-structure.js");
-  const dest = resolve(rulesDestDir, "describe-structure.js");
-  await Bun.write(dest, Bun.file(src));
+  await Promise.all(
+    RULE_FILES.map(async (file) => {
+      await Bun.write(resolve(rulesDestDir, file), Bun.file(resolve(ESLINT_RULES_DIR, file)));
+    }),
+  );
 }
 
 async function injectDeps(targetDir: string, workspace: string): Promise<void> {
@@ -48,7 +58,9 @@ async function injectDeps(targetDir: string, workspace: string): Promise<void> {
   const devDeps = pkg.devDependencies ?? {};
 
   const merged = { ...devDeps, ...EXTRA_DEV_DEPS };
-  const sorted = Object.fromEntries(Object.entries(merged).toSorted(([a], [b]) => a.localeCompare(b)));
+  const entries: Array<[string, string]> = Object.entries(merged);
+  const sortedEntries = entries.slice().sort(([a], [b]) => a.localeCompare(b));
+  const sorted = Object.fromEntries(sortedEntries);
 
   pkg.devDependencies = sorted;
 
@@ -68,7 +80,7 @@ export async function applyStrictEslint(config: ProjectConfig): Promise<void> {
   const tasks = WORKSPACE_CONFIGS.map(async ({ eslintTemplate, workspace }) => {
     await overwriteEslintConfig(config.targetDir, workspace, eslintTemplate);
     await injectDeps(config.targetDir, workspace);
-    if (WORKSPACES_WITH_CUSTOM_RULES.includes(workspace)) {
+    if ((WORKSPACES_WITH_CUSTOM_RULES as readonly string[]).includes(workspace)) {
       await copyEslintRules(config.targetDir, workspace);
     }
   });
